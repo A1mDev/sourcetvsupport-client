@@ -1,12 +1,11 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-project = builder.LibraryProject('sourcetvsupport')
+project = builder.LibraryProject('sourcetvsupport-client')
 project.sources += [
-  'extension.cpp',
-  os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp'),
-  os.path.join(Extension.sm_root, 'public', 'CDetour', 'detours.cpp'),
-  os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
+  'vsp_client.cpp',
+  #os.path.join(Extension.sm_root, 'public', 'CDetour', 'detours.cpp'),
+  #os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
 ]
 
 # sm1.10+
@@ -28,6 +27,6 @@ for sdk_name in Extension.sdks:
     if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
     
-    binary = Extension.HL2ExtConfig(project, builder, cxx, 'sourcetvsupport.ext.' + sdk.ext, sdk)
+    binary = Extension.HL2ExtConfig(project, builder, cxx, 'sourcetvsupport-client_' + sdk_name, sdk)
 
-Extension.extensions += builder.Add(project)
+Extension.binaries += builder.Add(project)

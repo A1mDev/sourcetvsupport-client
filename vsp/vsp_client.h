@@ -4,8 +4,8 @@
 // VSP Interface
 #include <iserverplugin.h>
 
-#define VERSION			"0.1"
-#define LOG_PREFIX		"[STVS] "
+#define VSP_VERSION			"0.1"
+#define VSP_LOG_PREFIX		"[STVS] "
 
 class VSPClient :
 	public IServerPluginCallbacks

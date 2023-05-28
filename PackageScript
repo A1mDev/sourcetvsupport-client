@@ -8,9 +8,7 @@ builder.SetBuildFolder('package')
 # Add any folders you need to this list
 folder_list = [
   'addons',
-  'addons/sourcetvsupport/bin',
-  'addons/sourcemod/gamedata',
-  'addons/sourcemod/extensions',
+  'addons/sourcetvsupport/bin'
 ]
 
 # Create the distribution folder hierarchy
@@ -31,28 +29,10 @@ def CopyFiles(src, dest, files):
 # VDF loader
 CopyFiles('extra', 'addons',
   [
-    'sourcetvsupport_vsp_l4d.vdf',
-    'sourcetvsupport_vsp_l4d2.vdf',
+    'sourcetvsupport_client_l4d.vdf',
+    'sourcetvsupport_client_l4d2.vdf',
   ]
 )
-
-# Gamedata file
-CopyFiles('extra', 'addons/sourcemod/gamedata',
-  [
-    'sourcetvsupport.txt',
-  ]
-)
-
-# Autoload file
-CopyFiles('extra', 'addons/sourcemod/extensions',
-  [
-    'sourcetvsupport.autoload',
-  ]
-)
-
-# Copy extension
-for cxx_task in Extension.extensions:
-  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
 
 # Copy VSP binary
 for cxx_task in Extension.binaries:
