@@ -103,4 +103,4 @@ public: // IServerPluginCallbacks
 	}
 };
 
-#endif
+#endif // _INCLUDE_PLUGIN_VSP_H_

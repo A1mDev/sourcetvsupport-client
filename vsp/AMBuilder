@@ -4,8 +4,8 @@ import os
 project = builder.LibraryProject('sourcetvsupport-client')
 project.sources += [
   'vsp_client.cpp',
-  #os.path.join(Extension.sm_root, 'public', 'CDetour', 'detours.cpp'),
-  #os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
+  "CDetour/detours.cpp",
+  os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
 ]
 
 # sm1.10+

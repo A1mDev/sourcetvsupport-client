@@ -1,4 +1,5 @@
 #include "vsp_client.h"
+#include "CDetour/detours.h"
 
 //ICvar* g_pCvar = NULL;
 

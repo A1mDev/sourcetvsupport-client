@@ -411,7 +411,7 @@ class ExtensionConfig(object):
       os.path.join(self.sm_root, 'public', 'asm'),
 
       #os.path.join(self.sm_root, 'public', 'extensions'),
-      #os.path.join(self.sm_root, 'sourcepawn', 'include'),
+      os.path.join(self.sm_root, 'sourcepawn', 'include'),
       #os.path.join(self.sm_root, 'public', 'amtl', 'amtl'),
       #os.path.join(self.sm_root, 'public', 'amtl'),
     ]
