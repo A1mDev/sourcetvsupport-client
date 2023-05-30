@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 #define _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 
+#include <sm_platform.h>
+
 #if defined PLATFORM_POSIX
 #include <sys/mman.h>
 #include <unistd.h>

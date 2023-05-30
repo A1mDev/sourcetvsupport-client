@@ -4,7 +4,10 @@ import os
 project = builder.LibraryProject('sourcetvsupport-client')
 project.sources += [
   'vsp_client.cpp',
-  "CDetour/detours.cpp",
+  'util.cpp',
+  'fixes/setparent_fix.cpp',
+  'CDetour/detours.cpp',
+  'MemoryUtils/MemoryUtils.cpp',
   os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
 ]
 

@@ -1,5 +1,7 @@
 #include "vsp_client.h"
-#include "CDetour/detours.h"
+#include "fixes/fixes.h"
+
+CSetParentFix g_ParentFix;
 
 //ICvar* g_pCvar = NULL;
 
@@ -13,15 +15,21 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 
 		return false;
 	}*/
+	
+	HMODULE clientdll = GetModuleHandle("client.dll");
+
+	if (!g_ParentFix.CreateDetour(clientdll)) {
+		return false;
+	}
 
 	Msg(VSP_LOG_PREFIX "Client plugin loaded successfully. Version: \"" VSP_VERSION "\"\n");
-
+	
 	return true;
 }
 
 void VSPClient::Unload(void)
 {
-	// 
+	g_ParentFix.DestroyDetour();
 }
 
 const char* VSPClient::GetPluginDescription(void)

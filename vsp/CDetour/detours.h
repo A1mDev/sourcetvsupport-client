@@ -180,8 +180,8 @@ ret name##Class::name(p1type p1name, p2type p2name, p3type p3name, p4type p4name
 #define GET_STATIC_CALLBACK(name) (void *)&name
 #define GET_STATIC_TRAMPOLINE(name) (void **)&name##_Actual
 
-#define DETOUR_CREATE_MEMBER(name, gamedata) CDetourManager::CreateDetour(GET_MEMBER_CALLBACK(name), GET_MEMBER_TRAMPOLINE(name), gamedata)
-#define DETOUR_CREATE_STATIC(name, gamedata) CDetourManager::CreateDetour(GET_STATIC_CALLBACK(name), GET_STATIC_TRAMPOLINE(name), gamedata)
+#define DETOUR_CREATE_MEMBER(name, address) CDetourManager::CreateDetour(GET_MEMBER_CALLBACK(name), GET_MEMBER_TRAMPOLINE(name), address)
+#define DETOUR_CREATE_STATIC(name, address) CDetourManager::CreateDetour(GET_STATIC_CALLBACK(name), GET_STATIC_TRAMPOLINE(name), address)
 
 
 class GenericClass {};
