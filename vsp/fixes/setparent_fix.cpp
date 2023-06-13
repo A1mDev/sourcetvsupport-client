@@ -2,12 +2,12 @@
 #include "vsp_client.h"
 #include "wrappers.h"
 
+// A fix has been found by a 'shqke'
+
 // ## Bug description:
 // 1) Missing arms models/blinking world model attachments during SourceTV footage playback
 // 2) Various sounds and effects (for example, explosions, destruction of the tank rock, etc) appearing at zero coordinates on the map
 // 3) Missing body parts from infected commons, these body parts appeared at zero coordinates on the map.
-
-// A fix has been found by a 'shqke'
 
 // ## Game code to fix
 
@@ -55,8 +55,8 @@
 	SetAbsVelocity(vecAbsVelocity);
 }*/
 
-ConVar g_CvarSetParentFix("l4d2_setparent_fix", "1", FCVAR_NONE, "Toggle fix SetParent. 0 - Disable, 1 - Enable.");
-ConVar g_CvarSetParentFixDebug("l4d2_setparent_fix_debug", "0", FCVAR_NONE, "Enable SetParent fix debug.");
+ConVar g_CvarSetParentFix("l4d2_setparent_fix", "1", FCVAR_CLIENTDLL, "Toggle fix SetParent. 0 - Disable, 1 - Enable.");
+ConVar g_CvarSetParentFixDebug("l4d2_setparent_fix_debug", "0", FCVAR_CLIENTDLL, "Enable SetParent fix debug. 0 - Disable, 1 - Enable.");
 
 DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity, int, iParentAttachment)
 {

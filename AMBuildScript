@@ -441,7 +441,8 @@ class ExtensionConfig(object):
       ['public', 'mathlib'],
       ['public', 'vstdlib'],
       ['public', 'tier0'],
-      ['public', 'tier1']
+      ['public', 'tier1'],
+      ['game', 'client']
     ]
     if sdk.name == 'episode1' or sdk.name == 'darkm':
       paths.append(['public', 'dlls'])
