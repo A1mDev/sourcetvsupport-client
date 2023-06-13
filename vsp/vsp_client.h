@@ -7,11 +7,12 @@
 #include "util.h"
 #include "MemoryUtils/MemoryUtils.h"
 
-#define VSP_VERSION			"0.2 (beta)"
+#define VSP_VERSION			"0.3"
 #define VSP_LOG_PREFIX		"[STVS] "
 
 class VSPClient :
-	public IServerPluginCallbacks
+	public IServerPluginCallbacks,
+	public IConCommandBaseAccessor
 {
 public: // IServerPluginCallbacks
 	// Initialize the plugin to run
@@ -104,6 +105,9 @@ public: // IServerPluginCallbacks
 	void OnQueryCvarValueFinished(QueryCvarCookie_t iCookie, edict_t* pPlayerEntity, EQueryCvarValueStatus eStatus, const char* pCvarName, const char* pCvarValue) override
 	{
 	}
+
+	// IConCommandBaseAccessor
+	virtual bool RegisterConCommandBase(ConCommandBase* pVar);
 };
 
 #endif // _INCLUDE_PLUGIN_VSP_H_
