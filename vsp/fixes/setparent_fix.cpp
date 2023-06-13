@@ -65,7 +65,7 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 
 	EHANDLE newParentHandle;
 	newParentHandle.Set(pParentEntity);
-	EHANDLE& m_pMoveParent = pThis->GetMoveParent();
+	EHANDLE& m_pMoveParent = pThis->GetMoveParentMember();
 
 	/*if (bDebug) {
 		Msg(VSP_LOG_PREFIX "[C_BaseEntity__SetParent][1] This: %x, pParentEntity: %x, iParentAttachment: %d, index: %d""\n", \
@@ -88,17 +88,14 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 		return;
 	}
 
-	/*if (bDebug) {
-		Msg(VSP_LOG_PREFIX "[C_BaseEntity::SetParent][3] Var 'newParentHandle: %d' is not equal to 'm_pMoveParent: %d'""\n", \
-			newParentHandle.ToInt(), m_pMoveParent.ToInt());
-	}*/
-
 	if (bDebug) {
-		Msg(VSP_LOG_PREFIX "[C_BaseEntity__SetParent][4] This: %x, pParentEntity: %x, iParentAttachment: %d, index: %d""\n", \
-			this, pParentEntity, iParentAttachment, pThis->GetIndex());
+		Msg(VSP_LOG_PREFIX "[C_BaseEntity__SetParent][3] This: %x, pParentEntity: %x, iParentAttachment: %d, index: %d""\n", \
+			this, pParentEntity, iParentAttachment, pThis->GetIndexMember());
+		Msg(VSP_LOG_PREFIX "[C_BaseEntity::SetParent][4] Var 'newParentHandle: %d' is not equal to 'm_pMoveParent: %d'""\n", \
+			newParentHandle.ToInt(), m_pMoveParent.ToInt());
 	}
 
-	EHANDLE& m_hNetworkMoveParent = pThis->GetNetworkMoveParent();
+	EHANDLE& m_hNetworkMoveParent = pThis->GetNetworkMoveParentMemberRef();
 
 	if (!pThis->IsServerEntity()) {
 		int iOldValue = m_hNetworkMoveParent.ToInt();
@@ -131,6 +128,9 @@ bool CSetParentFix::CreateDetour(HMODULE clientdll)
 	}
 
 	m_DetourSetParent->EnableDetour();
+
+	Msg(VSP_LOG_PREFIX "[C_BaseEntity::SetParent] Enable detour. Detour ptr: %x, func ptr: %x, sig size: %d""\n", \
+			m_DetourSetParent, C_BaseEntity__SetParent_pfn, iSigSize);
 
 	return true;
 }

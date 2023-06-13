@@ -11,22 +11,24 @@ typedef CHandle<C_BaseEntity> EHANDLE; // The client's version of EHANDLE.
 class C_BaseEntity
 {
 public:
-	inline EHANDLE &GetMoveParent()
+	inline EHANDLE GetMoveParentMember()
 	{
-		return *(EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_MOVEPARENT); // C_BaseEntity::m_pMoveParent
+		// C_BaseEntity::m_pMoveParent
+		return *(EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_MOVEPARENT);
 	}
 
-	inline EHANDLE &GetNetworkMoveParent()
+	inline EHANDLE &GetNetworkMoveParentMemberRef()
 	{
-		return *(EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_NETWORK_MOVEPARENT); // C_BaseEntity::m_hNetworkMoveParent
+		// C_BaseEntity::m_hNetworkMoveParent
+		return *(EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_NETWORK_MOVEPARENT);
 	}
 
 	inline bool IsServerEntity() const
 	{
-		return (GetIndex() != -1);
+		return (GetIndexMember() != -1);
 	}
 
-	inline int GetIndex() const
+	inline int GetIndexMember() const
 	{
 		// C_BaseEntity::index
 		return *(int*)((byte*)(this) + OFF_CBASEENTITY_INDEX);
