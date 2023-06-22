@@ -12,11 +12,8 @@ CTerrorGameRules** g_ppGameRules = NULL;
 
 bool LoadSignatures(HMODULE clientdll)
 {
-	char sSignatureAddress[256];
-	size_t iSigSize = UTIL_StringToSignature(SIG_CBASEENTITY_UPDATEVISIBILITY, sSignatureAddress, sizeof(sSignatureAddress));
-
-	C_BaseEntity::m_updateVisibilityFn = uintptr_t(g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize));
-	if (!C_BaseEntity::m_updateVisibilityFn) {
+	C_BaseEntity::m_updateVisibilityFn = UTIL_SignatureToAddress(clientdll, SIG_CBASEENTITY_UPDATEVISIBILITY);
+	if (C_BaseEntity::m_updateVisibilityFn == NULL) {
 		Error(VSP_LOG_PREFIX "Could not find signature for function 'C_BaseEntity::UpdateVisibility'""\n");
 
 		return false;
@@ -25,10 +22,8 @@ bool LoadSignatures(HMODULE clientdll)
 	Msg(VSP_LOG_PREFIX "[C_BaseEntity::UpdateVisibility] Signature found: %x""\n", C_BaseEntity::m_updateVisibilityFn);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	iSigSize = UTIL_StringToSignature(SIG_CBASEPLAYER_GETVIEWMODEL, sSignatureAddress, sizeof(sSignatureAddress));
-
-	C_BasePlayer::m_getViewModelFn = uintptr_t(g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize));
-	if (!C_BasePlayer::m_getViewModelFn) {
+	C_BasePlayer::m_getViewModelFn = UTIL_SignatureToAddress(clientdll, SIG_CBASEPLAYER_GETVIEWMODEL);
+	if (C_BasePlayer::m_getViewModelFn == NULL) {
 		Error(VSP_LOG_PREFIX "Could not find signature for function 'C_BasePlayer::GetViewModel'""\n");
 
 		return false;
@@ -37,10 +32,8 @@ bool LoadSignatures(HMODULE clientdll)
 	Msg(VSP_LOG_PREFIX "[C_BasePlayer::GetViewModel] Signature found: %x""\n", C_BasePlayer::m_getViewModelFn);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	iSigSize = UTIL_StringToSignature(SIG_CHLTVCAMERA_CALCCHASECAMVIEW, sSignatureAddress, sizeof(sSignatureAddress));
-
-	C_HLTVCameraWrapper::m_calcChaseCamViewFn = uintptr_t(g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize));
-	if (!C_HLTVCameraWrapper::m_calcChaseCamViewFn) {
+	C_HLTVCameraWrapper::m_calcChaseCamViewFn = UTIL_SignatureToAddress(clientdll, SIG_CHLTVCAMERA_CALCCHASECAMVIEW);
+	if (C_HLTVCameraWrapper::m_calcChaseCamViewFn == NULL) {
 		Error(VSP_LOG_PREFIX "Could not find signature for function 'C_HLTVCamera::CalcChaseCamView'""\n");
 
 		return false;
@@ -49,12 +42,9 @@ bool LoadSignatures(HMODULE clientdll)
 	Msg(VSP_LOG_PREFIX "[C_HLTVCamera::CalcChaseCamView] Signature found: %x""\n", C_HLTVCameraWrapper::m_calcChaseCamViewFn);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	iSigSize = UTIL_StringToSignature(SIG_GAMERULES_PTR, sSignatureAddress, sizeof(sSignatureAddress));
-	
-	uintptr_t pGameRulesPattern = uintptr_t(g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize));
-	
-	g_ppGameRules = *(CTerrorGameRules***)(pGameRulesPattern + 2); // + 2 first bytes (8B 0D)
-	if (!g_ppGameRules) {
+	// We use a pointer to a pointer, because this class may not be available when changing the map
+	g_ppGameRules = *(CTerrorGameRules***)(UTIL_SignatureToAddress(clientdll, SIG_GAMERULES_PTR) + 2); // + 2 first bytes (8B 0D)
+	if (g_ppGameRules == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get pointer to instance 'CTerrorGameRules'""\n");
 
 		return false;
@@ -63,22 +53,18 @@ bool LoadSignatures(HMODULE clientdll)
 	Msg(VSP_LOG_PREFIX "[CTerrorGameRules] Received instance: %x""\n", g_ppGameRules);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	iSigSize = UTIL_StringToSignature(SIG_GLOBALS_PTR, sSignatureAddress, sizeof(sSignatureAddress));
-
-	uintptr_t pGlobalsPattern = uintptr_t(g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize));
-
-	CGlobalVars **ppGlobals = *(CGlobalVars***)(pGlobalsPattern + 2); // + 2 first bytes (8B 0D)
-	if (!ppGlobals) {
+	CGlobalVars **ppGlobals = *(CGlobalVars***)(UTIL_SignatureToAddress(clientdll, SIG_GLOBALS_PTR) + 2); // + 2 first bytes (8B 0D) (dereference)
+	if (ppGlobals == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get pointer to instance 'CGlobalVars'""\n");
 
 		return false;
 	}
 
 	g_pGlobals = *ppGlobals;
-	if (!g_pGlobals) {
+	if (g_pGlobals == NULL) {
 		Msg("Failed to get pointer to class 'CGlobalVars': %x""\n", g_pGlobals);
 
-		return NULL;
+		return false;
 	}
 
 	Msg(VSP_LOG_PREFIX "[CGlobalVars] Received instance: %x. MaxClients: %d ""\n", g_pGlobals, g_pGlobals->maxClients);

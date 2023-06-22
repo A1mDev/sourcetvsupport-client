@@ -110,18 +110,16 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 
 bool CSetParentFix::CreateDetour(HMODULE clientdll)
 {
-	char sSignatureAddress[256];
-	size_t iSigSize = UTIL_StringToSignature(SIG_CBASEENTITY_SETPARENT, sSignatureAddress, sizeof(sSignatureAddress));
-
-	void* C_BaseEntity__SetParent_pfn = g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize);
-	if (!C_BaseEntity__SetParent_pfn) {
+	size_t iSigSize = 0;
+	uintptr_t C_BaseEntity__SetParent_pfn = UTIL_SignatureToAddress(clientdll, SIG_CBASEENTITY_SETPARENT, &iSigSize);
+	if (C_BaseEntity__SetParent_pfn == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to find signature 'C_BaseEntity::SetParent'. Please contact the author""\n");
 
 		return false;
 	}
 
-	m_DetourSetParent = DETOUR_CREATE_MEMBER(C_BaseEntity__SetParent, C_BaseEntity__SetParent_pfn);
-	if (!m_DetourSetParent) {
+	m_DetourSetParent = DETOUR_CREATE_MEMBER(C_BaseEntity__SetParent, (void*)C_BaseEntity__SetParent_pfn);
+	if (m_DetourSetParent == NULL) {
 		Error(VSP_LOG_PREFIX "Could not obtain signature for 'C_BaseEntity::SetParent'""\n");
 
 		return false;
@@ -137,7 +135,7 @@ bool CSetParentFix::CreateDetour(HMODULE clientdll)
 
 void CSetParentFix::DestroyDetour()
 {
-	if (m_DetourSetParent) {
+	if (m_DetourSetParent != NULL) {
 		m_DetourSetParent->DisableDetour();
 		m_DetourSetParent = NULL;
 	}

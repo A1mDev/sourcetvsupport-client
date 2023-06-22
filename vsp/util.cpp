@@ -36,3 +36,15 @@ size_t UTIL_StringToSignature(const char* str, char buffer[], size_t maxlength)
 
 	return real_bytes;
 }
+
+uintptr_t UTIL_SignatureToAddress(HMODULE hModule, const char* sSig, size_t *retSigSize /*= NULL*/)
+{
+	char sSignatureAddress[256];
+	size_t iSigSize = UTIL_StringToSignature(sSig, sSignatureAddress, sizeof(sSignatureAddress));
+	
+	if (retSigSize != NULL) {
+		*retSigSize = iSigSize;
+	}
+
+	return uintptr_t(g_MemUtils.FindPattern(hModule, sSignatureAddress, iSigSize));
+}

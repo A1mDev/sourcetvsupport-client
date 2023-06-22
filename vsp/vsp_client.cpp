@@ -36,7 +36,7 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	Msg(VSP_LOG_PREFIX "[ICvar] received interface: %x ""\n", g_pCVar);
 
 	g_pEngineTool = (IEngineToolWrapper*)interfaceFactory(VENGINETOOL_INTERFACE_VERSION, NULL);
-	if (!g_pEngineTool) {
+	if (g_pEngineTool == NULL) {
 		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" VENGINETOOL_INTERFACE_VERSION "\"\n");
 
 		return false;
@@ -65,7 +65,7 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 
 	CreateInterfaceFn gameClientFactory;
 	g_pEngineTool->GetClientFactory(gameClientFactory);
-	if (!gameClientFactory) {
+	if (gameClientFactory == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get client factory""\n");
 
 		return false;
@@ -74,7 +74,7 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	Msg(VSP_LOG_PREFIX "[gameClientFactory] Received interface: %x ""\n", gameClientFactory);
 
 	/*g_pClientTools = (IClientTools*)gameClientFactory(VCLIENTTOOLS_INTERFACE_VERSION, NULL);
-	if (!g_pClientTools) {
+	if (g_pClientTools == NULL) {
 		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" VCLIENTTOOLS_INTERFACE_VERSION "\"\n");
 
 		return false;
@@ -83,7 +83,7 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	Msg(VSP_LOG_PREFIX "[IClientTools] Received interface: %x ""\n", g_pClientTools);*/
 
 	g_pClientEntityList = (IClientEntityList*)gameClientFactory(VCLIENTENTITYLIST_INTERFACE_VERSION, NULL);
-	if (!g_pClientEntityList) {
+	if (g_pClientEntityList == NULL) {
 		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" VCLIENTENTITYLIST_INTERFACE_VERSION "\"\n");
 
 		return false;
@@ -144,7 +144,7 @@ CON_COMMAND(stv_check_globals, "Check 'CGlobalVars' Instance.")
 {
 	Msg(VSP_LOG_PREFIX "[CGlobalVars] Some properties are available only after connecting to the server!""\n");
 	Msg(VSP_LOG_PREFIX "[CGlobalVars] Instance: %x. MaxClients: %d, Time: %f, frametime: %f !""\n", \
-		g_pGlobals, g_pGlobals->maxClients, g_pGlobals->realtime, g_pGlobals->frametime);
+			g_pGlobals, g_pGlobals->maxClients, g_pGlobals->realtime, g_pGlobals->frametime);
 }
 
 CON_COMMAND(stv_check_gamerules, "Check 'CTerrorGameRules' Instance.")
@@ -159,6 +159,6 @@ CON_COMMAND(stv_check_gamerules, "Check 'CTerrorGameRules' Instance.")
 	Vector vecView = pGameRules->GetViewVectors()->m_vView;
 
 	Msg(VSP_LOG_PREFIX "[CTerrorGameRules] Instance: %x. vecView: %f %f %f !""\n", \
-		pGameRules, vecView.x, vecView.y, vecView.z);
+			pGameRules, vecView.x, vecView.y, vecView.z);
 }
 #endif

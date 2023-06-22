@@ -15,7 +15,7 @@
 // `C_BasePlayer::m_Local.m_vecPunchAngle` - This prop is not available to us without modifying the server.
 // Need to add code to function `SendProxy_SendLocalDataTable` for server.
 
-// Ñode ignores crosshair position during player incapacitation :
+// Code ignores crosshair position during player incapacitation :
 // ## Game code to fix
 
 /*
@@ -139,7 +139,7 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 
 	C_TerrorPlayer* pPlayer = (C_TerrorPlayer*)UTIL_PlayerByIndex(m_iTarget1);
 
-	if (!pPlayer) {
+	if (pPlayer == NULL) {
 		return;
 	}
 
@@ -206,16 +206,16 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	pPlayer->CalcViewModelView(eyeOrigin, eyeAngles);
 
 	C_BaseViewModel* pViewModel = pPlayer->GetViewModel(0);
-	if (pViewModel) {
+	if (pViewModel != NULL) {
 		pViewModel->UpdateVisibility();
 	}
-
-	//DETOUR_MEMBER_CALL(C_HLTVCamera__CalcInEyeCamView)(eyeOrigin, eyeAngles, fov); // skip real function
 }
 
 const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvIsIncapacitated)
 {
+	// Netprop value `C_BasePlayer::m_Local.m_vecPunchAngle` during player incapacitation: 0.000000 0.000000 19.968750
 	static QAngle vecIncapPunchAngleDef(0.0f, 0.0f, 19.968750f);
+
 	//static Vector vecPunchAngle;
 	//static ConVarRef survivor_incapacitated_roll("survivor_incapacitated_roll");
 	//static ConVarRef punch_angle_decay_rate("punch_angle_decay_rate");
@@ -235,7 +235,6 @@ const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvI
 		return vec3_angle;
 	}
 
-	// Netprop value `C_BasePlayer::m_Local.m_vecPunchAngle` during player incapacitation: 0.000000 0.000000 19.968750
 	// Netprop `C_BasePlayer::m_Local.m_vecPunchAngle` not available here so we don't use
 	//Msg(VSP_LOG_PREFIX "Server cvar 'tv_send_local_data_tables' disabled attempt to reproduce code during player incapacitation""\n");
 
@@ -268,18 +267,16 @@ const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvI
 
 bool CHLTVCameraFix::CreateDetour(HMODULE clientdll)
 {
-	char sSignatureAddress[256];
-	size_t iSigSize = UTIL_StringToSignature(SIG_CHLTVCAMERA_CALCINEYECAMVIEW, sSignatureAddress, sizeof(sSignatureAddress));
-
-	void* C_HLTVCamera__CalcInEyeCamView_pfn = g_MemUtils.FindPattern(clientdll, sSignatureAddress, iSigSize);
-	if (!C_HLTVCamera__CalcInEyeCamView_pfn) {
+	size_t iSigSize = 0;
+	uintptr_t C_HLTVCamera__CalcInEyeCamView_pfn = UTIL_SignatureToAddress(clientdll, SIG_CHLTVCAMERA_CALCINEYECAMVIEW, &iSigSize);
+	if (C_HLTVCamera__CalcInEyeCamView_pfn == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to find signature 'C_HLTVCamera::CalcInEyeCamView'. Please contact the author""\n");
 
 		return false;
 	}
 
-	m_Detour_CalcInEyeCamView = DETOUR_CREATE_MEMBER(C_HLTVCamera__CalcInEyeCamView, C_HLTVCamera__CalcInEyeCamView_pfn);
-	if (!m_Detour_CalcInEyeCamView) {
+	m_Detour_CalcInEyeCamView = DETOUR_CREATE_MEMBER(C_HLTVCamera__CalcInEyeCamView, (void*)C_HLTVCamera__CalcInEyeCamView_pfn);
+	if (m_Detour_CalcInEyeCamView == NULL) {
 		Error(VSP_LOG_PREFIX "Could not obtain signature for 'C_HLTVCamera::CalcInEyeCamView'""\n");
 
 		return false;
@@ -295,7 +292,7 @@ bool CHLTVCameraFix::CreateDetour(HMODULE clientdll)
 
 void CHLTVCameraFix::DestroyDetour()
 {
-	if (m_Detour_CalcInEyeCamView) {
+	if (m_Detour_CalcInEyeCamView != NULL) {
 		m_Detour_CalcInEyeCamView->DisableDetour();
 		m_Detour_CalcInEyeCamView = NULL;
 	}

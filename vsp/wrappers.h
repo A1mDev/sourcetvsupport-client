@@ -311,7 +311,6 @@ public:
 
 public:
 	static uintptr_t m_calcChaseCamViewFn;
-	int m_iLastTarget1; // the last target before we switched
 };
 
 class IEngineToolWrapper
@@ -339,10 +338,10 @@ public:
 
 inline CTerrorGameRules* GetGameRules(bool bMsg = true)
 {
-	CTerrorGameRules* pGameRules = *g_ppGameRules;
+	CTerrorGameRules* pGameRules = *g_ppGameRules;  // (dereference)
 
 	// Map not loaded yet this class is not available.
-	if (!pGameRules) {
+	if (pGameRules == NULL) {
 		if (bMsg) {
 			Msg("Failed to get pointer to class 'CTerrorGameRules': %x""\n", pGameRules);
 		}
@@ -360,7 +359,7 @@ inline IClientEntityList* ClientEntityList()
 
 inline C_BasePlayer* ToBasePlayer(C_BaseEntity* pEntity)
 {
-	if (!pEntity || !pEntity->IsPlayer()) {
+	if (pEntity == NULL || !pEntity->IsPlayer()) {
 		return NULL;
 	}
 
@@ -374,12 +373,12 @@ inline C_BasePlayer* UTIL_PlayerByIndex(int iEntIndex)
 	}
 
 	IClientNetworkable* pNet = ClientEntityList()->GetClientNetworkable(iEntIndex);
-	if (!pNet) {
+	if (pNet == NULL) {
 		return NULL;
 	}
 
 	IClientUnknown* pUnk = pNet->GetIClientUnknown();
-	if (!pUnk) {
+	if (pUnk == NULL) {
 		return NULL;
 	}
 
@@ -393,12 +392,12 @@ inline C_BasePlayer* UTIL_PlayerByIndex(int iEntIndex)
 	}
 
 	IClientNetworkable* pNet = ClientEntityList()->GetClientNetworkable(iEntIndex);
-	if (!pNet) {
+	if (pNet  == NULL) {
 		return NULL;
 	}
 
 	IClientUnknown* pUnk = pNet->GetIClientUnknown();
-	if (!pUnk) {
+	if (pUnk  == NULL) {
 		return NULL;
 	}
 
