@@ -9,6 +9,7 @@
 
 CSetParentFix g_ParentFix;
 CHLTVCameraFix g_HltvCameraFix;
+CModelCrashFix g_ModelCrashFix;
 
 ICvar* g_pCvar = NULL;
 //IPlayerInfoManager* g_pPlayerManager = NULL;
@@ -92,12 +93,17 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	Msg(VSP_LOG_PREFIX "[IClientEntityList] Received interface: %x ""\n", g_pClientEntityList);
 	
 	HMODULE clientdll = GetModuleHandle("client.dll");
+	HMODULE enginedll = GetModuleHandle("engine.dll");
 
 	if (!g_ParentFix.CreateDetour(clientdll)) {
 		return false;
 	}
 
 	if (!g_HltvCameraFix.CreateDetour(clientdll)) {
+		return false;
+	}
+
+	if (!g_ModelCrashFix.CreateDetour(enginedll)) {
 		return false;
 	}
 
@@ -116,6 +122,7 @@ void VSPClient::Unload(void)
 {
 	g_ParentFix.DestroyDetour();
 	g_HltvCameraFix.DestroyDetour();
+	g_ModelCrashFix.DestroyDetour();
 
 	ConVar_Unregister();
 }
@@ -136,7 +143,7 @@ bool VSPClient::RegisterConCommandBase(ConCommandBase* pVar)
 
 const char* VSPClient::GetPluginDescription(void)
 {
-	return "L4D2 SourceTV client fixes" VSP_VERSION ", A1m`";
+	return "L4D2 SourceTV client fixes. Authors: A1m`. Version: " VSP_VERSION;
 }
 
 #if VSP_DEBUG

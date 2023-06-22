@@ -30,6 +30,17 @@ public:
 	CDetour* m_Detour_CalcInEyeCamView = NULL;
 };
 
+class CModelCrashFix
+{
+public:
+	bool CreateDetour(HMODULE enginedll);
+
+	void DestroyDetour();
+
+public:
+	CDetour* m_DetourFindOrCreateStaticPropColorData = NULL;
+};
+
 extern ConVar g_CvarSourceTVSendLocalTables;
 
 #endif // _INCLUDE_FIXES_VSP_H_

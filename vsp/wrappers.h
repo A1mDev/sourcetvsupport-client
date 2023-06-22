@@ -15,6 +15,7 @@ extern IGameEventManager2* gameeventmanager; // Need for hltvcamera.h
 #include "hltvcamera.h"
 #include "shareddefs.h"
 //#include "itoolentity.h"
+#include "l4d2sdk/model.h"
 
 class C_BaseEntity;
 class C_BaseViewModel;
@@ -317,9 +318,30 @@ class IEngineToolWrapper
 {
 public:
 	// 'hl2sdk-l4d2' has the wrong vtable table 'IEngineTool' =(
-	inline void GetClientFactory(CreateInterfaceFn& factory) 
+	inline void GetClientFactory(CreateInterfaceFn& factory)
 	{
 		vfunc<void(__thiscall*)(IEngineToolWrapper*, CreateInterfaceFn&)>(this, VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY)(this, factory);
+	}
+};
+
+class CColorMeshData
+{
+public:
+	inline CColorMeshData* GetData()
+	{
+		return this;
+	}
+};
+
+class CModelRenderWrapper :
+	public CModelRender
+{
+public:
+	// Is inside the inherited class 'IDataCacheClient'
+	inline CColorMeshData* CacheGet(DataCacheHandle_t handle, bool bFrameLock = true)
+	{
+		//return vfunc<CColorMeshData*(__thiscall*)(IDataCacheSection*, DataCacheHandle_t, bool)>(m_pCache, VTB_OFF_CMODELRENDER_CACHEGET)(m_pCache, handle, bFrameLock);
+		return (CColorMeshData*)(((CColorMeshData*)m_pCache->Get(handle, bFrameLock))->GetData());
 	}
 };
 

@@ -16,6 +16,12 @@
 // The pointer is in function 'UTIL_PlayerByIndex', which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
 // client.dll
 
+#define SIG_CMODELRENDER_CFINDORCREATESTATICPROPCOLORDATA	"\x55\x8B\xEC\x81\xEC\x18\x05\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x0F\xB7\x45\x08"
+// CColorMeshData* CModelRender::FindOrCreateStaticPropColorData(ModelInstanceHandle_t handle)
+// 55 8B EC 81 EC 18 05 ? ? A1 ? ? ? ? 33 C5 89 45 FC 0F B7 45 08
+// engine.dll
+// Can be found by line "g_pMDLCache->GetHardwareData failed for %s\n"
+
 #define SIG_CHLTVCAMERA_CALCCHASECAMVIEW		"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x81\xEC\xC8\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x15\x2A\x2A\x2A\x2A"
 // void C_HLTVCamera::CalcChaseCamView(Vector& eyeOrigin, QAngle& eyeAngles, float& fov)
 // 53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC C8 ? ? ? A1 ? ? ? ? 33 C5 89 45 FC 8B 15 ? ? ? ?
