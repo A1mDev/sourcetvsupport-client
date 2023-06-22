@@ -167,7 +167,7 @@ DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshDat
 	g_mapModels[&instance] = std::string(instance.m_pModel->szPathName);
 #endif
 
-	//Msg(VSP_LOG_PREFIX "instance.m_pModel->strName: %s""\n", instance.m_pModel->szPathName);
+	//Msg(VSP_LOG_PREFIX "instance.m_pModel->szPathName: %s""\n", instance.m_pModel->szPathName);
 	
 	return DETOUR_MEMBER_CALL(CModelRender__FindOrCreateStaticPropColorData)(handle); // call real function
 }
