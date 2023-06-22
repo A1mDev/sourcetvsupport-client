@@ -5,7 +5,9 @@ project = builder.LibraryProject('sourcetvsupport-client')
 project.sources += [
   'vsp_client.cpp',
   'util.cpp',
+  'gamedata.cpp',
   'fixes/setparent_fix.cpp',
+  'fixes/hltv_camera_fix.cpp',
   'CDetour/detours.cpp',
   'MemoryUtils/MemoryUtils.cpp',
   os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
