@@ -151,7 +151,7 @@ DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshDat
 					&instance, g_CvarModelCrashFix.GetBool(), sCachedModelPath);
 #else 
 			Msg(VSP_LOG_PREFIX "[CModelRender::FindOrCreateStaticPropColorData][4][CRASH] ModelInstance_t: %x, m_pModel NULL, fix: %d!""\n", \
-				&instance, g_CvarModelCrashFix.GetBool(),);
+				&instance, g_CvarModelCrashFix.GetBool());
 #endif
 		}
 
