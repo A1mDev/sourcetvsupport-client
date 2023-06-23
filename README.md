@@ -7,5 +7,6 @@ Installation
 1. Get [latest sourcetvsupport-client release](https://github.com/A1mDev/sourcetvsupport-client/actions) (requires authentication) for your OS (linux or windows)
 2. Extract the zip file to folder `left4dead2/addons`
 3. Add `-insecure` to your game launch options
+4. Now you can view broadcasts and demos recorded by SourceTV
 
 Note: There is a limitation you will not be able to join any server with VAC anti-cheat, you will need to exit the game and remove the launch option `-insecure`
