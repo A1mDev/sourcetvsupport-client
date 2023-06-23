@@ -320,7 +320,7 @@ class C_HLTVCameraWrapper :
 public:
 	inline void CalcChaseCamView(Vector& eyeOrigin, QAngle& eyeAngles, float& fov)
 	{
-		return ((void(__thiscall*)(C_HLTVCamera*, Vector&, QAngle&, float&))(m_calcChaseCamViewFn))(this, eyeOrigin, eyeAngles, fov);
+		((void(__thiscall*)(C_HLTVCamera*, Vector&, QAngle&, float&))(m_calcChaseCamViewFn))(this, eyeOrigin, eyeAngles, fov);
 	}
 
 	inline int GetCameraTarget1Member()
@@ -345,6 +345,16 @@ public:
 
 public:
 	static uintptr_t m_calcChaseCamViewFn;
+};
+
+class IBaseClientDLLWrapper
+{
+public:
+	// 'hl2sdk-l4d2' has the wrong vtable table 'IBaseClientDLL' =(
+	inline ClientClass* GetAllClasses()
+	{
+		return vfunc<ClientClass*(__thiscall*)(IBaseClientDLLWrapper*)>(this, VTB_OFF_IBASECLIENTDLL_GETALLCLASSES)(this);
+	}
 };
 
 class IEngineToolWrapper

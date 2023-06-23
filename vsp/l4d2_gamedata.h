@@ -79,7 +79,7 @@
 //////////////////////////// Vtable Offsets ////////////////////////////
 
 #define VTB_OFF_CBASEENTITY_ISPLAYER						143
-// virtual bool IsPlayer( void ) const 
+// virtual bool IsPlayer() const 
 // Vtable offset is inside function 'UTIL_PlayerByIndex', 
 // which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
 // client.dll
@@ -87,6 +87,13 @@
 #define VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY				11
 // void IEngineTool::GetClientFactory(CreateInterfaceFn& factory)
 // Calculated with csgo source code and then checked
+// 'hl2sdk-l4d2' has the wrong vtable table 'IEngineTool', vtable offset 10
+// client.dll
+
+#define VTB_OFF_IBASECLIENTDLL_GETALLCLASSES				7
+// ClientClass* IBaseClientDLL::GetAllClasses()
+// 'hl2sdk-l4d2' has the wrong vtable table 'IBaseClientDLL', vtable offset 6
+// Calculated closest value using 'hl2sdk-l4d2', and found exact value using testing
 // client.dll
 
 #define VTB_OFF_CBASEPLAYER_CALCVIEWMODELVIEW				249
@@ -105,7 +112,7 @@
 // client.dll
 
 #define VTB_OFF_CBASEPLAYER_EYEANGLES						156
-// inline const QAngle& C_BaseEntity::EyeAngles(void) const
+// inline const QAngle& C_BaseEntity::EyeAngles() const
 // Vtable offset is inside function 'C_HLTVCamera::CalcInEyeCamView'
 // client.dll
 

@@ -19,7 +19,7 @@ ICvar* g_pCvar = NULL;
 IClientEntityList* g_pClientEntityList = NULL;
 IEngineToolWrapper* g_pEngineTool = NULL;
 //IClientTools* g_pClientTools = NULL;
-IBaseClientDLL* g_pClientDLL = NULL;
+IBaseClientDLLWrapper* g_pClientDLL = NULL;
 
 EXPOSE_SINGLE_INTERFACE(VSPClient, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS);
 
@@ -78,7 +78,7 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 
 	Msg(VSP_LOG_PREFIX "[gameClientFactory] Received interface: %x ""\n", gameClientFactory);
 
-	g_pClientDLL = (IBaseClientDLL*)gameClientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
+	g_pClientDLL = (IBaseClientDLLWrapper*)gameClientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
 	if (!g_pClientDLL) {
 		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" CLIENT_DLL_INTERFACE_VERSION "\"\n");
 
