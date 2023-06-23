@@ -6,7 +6,9 @@
 #include "icliententitylist.h"
 #include "wrappers.h"
 //#include "itoolentity.h"
-#include "cdll_int.h"
+//#include "cdll_int.h"
+
+#define CLIENT_DLL_INTERFACE_VERSION "VClient016"
 
 CNetPropsManager g_NetProps;
 
