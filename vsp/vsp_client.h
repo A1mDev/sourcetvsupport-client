@@ -7,7 +7,7 @@
 #include "util.h"
 #include "MemoryUtils/MemoryUtils.h"
 
-#define VSP_VERSION			"0.9"
+#define VSP_VERSION			"1.1"
 #define VSP_LOG_PREFIX		"[STVS] "
 #define VSP_DEBUG			1
 
@@ -111,6 +111,9 @@ public: // IServerPluginCallbacks
 	virtual bool RegisterConCommandBase(ConCommandBase* pVar);
 };
 
-bool LoadSignatures(HMODULE clientdll);
+bool InitFunctions(HMODULE clientdll);
+bool InitClassInstances(HMODULE clientdll);
+bool InitOffsets();
+bool DumpClientNetClasses();
 
 #endif // _INCLUDE_PLUGIN_VSP_H_

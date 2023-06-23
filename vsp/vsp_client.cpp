@@ -6,6 +6,9 @@
 #include "icliententitylist.h"
 #include "wrappers.h"
 //#include "itoolentity.h"
+#include "cdll_int.h"
+
+CNetPropsManager g_NetProps;
 
 CSetParentFix g_ParentFix;
 CHLTVCameraFix g_HltvCameraFix;
@@ -16,6 +19,7 @@ ICvar* g_pCvar = NULL;
 IClientEntityList* g_pClientEntityList = NULL;
 IEngineToolWrapper* g_pEngineTool = NULL;
 //IClientTools* g_pClientTools = NULL;
+IBaseClientDLL* g_pClientDLL = NULL;
 
 EXPOSE_SINGLE_INTERFACE(VSPClient, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS);
 
@@ -74,6 +78,15 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 
 	Msg(VSP_LOG_PREFIX "[gameClientFactory] Received interface: %x ""\n", gameClientFactory);
 
+	g_pClientDLL = (IBaseClientDLL*)gameClientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
+	if (!g_pClientDLL) {
+		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" CLIENT_DLL_INTERFACE_VERSION "\"\n");
+
+		return false;
+	}
+
+	Msg(VSP_LOG_PREFIX "[IBaseClientDLL] Received interface: %x ""\n", g_pClientDLL);
+
 	/*g_pClientTools = (IClientTools*)gameClientFactory(VCLIENTTOOLS_INTERFACE_VERSION, NULL);
 	if (g_pClientTools == NULL) {
 		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" VCLIENTTOOLS_INTERFACE_VERSION "\"\n");
@@ -94,6 +107,22 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	
 	HMODULE clientdll = GetModuleHandle("client.dll");
 	HMODULE enginedll = GetModuleHandle("engine.dll");
+	
+	if (!DumpClientNetClasses()) {
+		return false;
+	}
+
+	if (!InitFunctions(clientdll)) {
+		return false;
+	}
+
+	if (!InitClassInstances(clientdll)) {
+		return false;
+	}
+
+	if (!InitOffsets()) {
+		return false;
+	}
 
 	if (!g_ParentFix.CreateDetour(clientdll)) {
 		return false;
@@ -107,10 +136,6 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 		return false;
 	}
 
-	if (!LoadSignatures(clientdll)) {
-		return false;
-	}
-
 	ConVar_Register(0, this);
 
 	Msg(VSP_LOG_PREFIX "Client plugin loaded successfully. Version: \"" VSP_VERSION "\"\n");
@@ -118,11 +143,33 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	return true;
 }
 
-void VSPClient::Unload(void)
+bool DumpClientNetClasses()
+{
+	ClientClass* pClasses = g_pClientDLL->GetAllClasses();
+	if (pClasses == NULL) {
+		Error(VSP_LOG_PREFIX "Failed to get pointer to class  \"ClientClass\"\n");
+
+		return false;
+	}
+
+	int iClassCount = g_NetProps.DumpClientClasses(pClasses);
+	if (iClassCount < 1) {
+		Error(VSP_LOG_PREFIX "Failed to save netprops dump!""\n");
+
+		return false;
+	}
+
+	Msg(VSP_LOG_PREFIX "[ClientClass] Get props: %d ""\n", iClassCount);
+
+	return true;
+}
+
+void VSPClient::Unload()
 {
 	g_ParentFix.DestroyDetour();
 	g_HltvCameraFix.DestroyDetour();
 	g_ModelCrashFix.DestroyDetour();
+	g_NetProps.Clear();
 
 	ConVar_Unregister();
 }

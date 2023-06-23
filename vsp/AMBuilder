@@ -5,7 +5,7 @@ project = builder.LibraryProject('sourcetvsupport-client')
 project.sources += [
   'vsp_client.cpp',
   'util.cpp',
-  'gamedata.cpp',
+  'wrappers.cpp',
   'fixes/setparent_fix.cpp',
   'fixes/hltv_camera_fix.cpp',
   'fixes/modelcrash_fix.cpp',

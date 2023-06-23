@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-static std::map<void*, std::string> g_mapModels;
+std::map<void*, std::string> g_mapModels;
 #endif
 
 // A fix has been found by a 'A1m`'
@@ -79,7 +79,7 @@ ConVar g_CvarModelCrashFixDebug("l4d2_model_crash_fix_debug", "2", FCVAR_CLIENTD
 	instance.m_ColorMeshHandle = CacheCreate(params);
 	ProtectColorDataIfQueued(instance.m_ColorMeshHandle);
 	pColorMeshData = CacheGet(instance.m_ColorMeshHandle);
-
+	
 	return pColorMeshData;
 }*/
 
@@ -141,11 +141,8 @@ DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshDat
 	if (instance.m_pModel == NULL) {
 		if (iDebug == eFixDebugPrint) {
 #if MODEL_CRASH_DEBUG
-			std::string sCachedModelPath = "Unknown";
 			auto iter = g_mapModels.find(&instance);
-			if (iter != g_mapModels.end()) {
-				sCachedModelPath = iter->second;
-			}
+			std::string sCachedModelPath = (iter == g_mapModels.end()) ? "Unknown" : iter->second;
 
 			Msg(VSP_LOG_PREFIX "[CModelRender::FindOrCreateStaticPropColorData][4][CRASH] ModelInstance_t: %x, m_pModel NULL, fix: %d, model path: %s!""\n", \
 					&instance, g_CvarModelCrashFix.GetBool(), sCachedModelPath);

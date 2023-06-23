@@ -9,13 +9,16 @@
 #include "iclientunknown.h"
 #include "iclientnetworkable.h"
 #include "const.h" // LIFE_ALIVE
+
 #include "igameevents.h" // for include hltvcamera.h
 #include "usercmd.h" // for include hltvcamera.h
 extern IGameEventManager2* gameeventmanager; // Need for hltvcamera.h
 #include "hltvcamera.h"
+
 #include "shareddefs.h"
 //#include "itoolentity.h"
 #include "l4d2sdk/model.h"
+#include "netproprs.h"
 
 class C_BaseEntity;
 class C_BaseViewModel;
@@ -48,7 +51,7 @@ public:
 	inline EHANDLE &GetNetworkMoveParentMemberRef()
 	{
 		// C_BaseEntity::m_hNetworkMoveParent
-		return *(EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_NETWORK_MOVEPARENT);
+		return *(EHANDLE*)((byte*)(this) + m_iNetworkMoveParentOffset);
 	}
 
 	inline bool IsServerEntity() const
@@ -59,6 +62,7 @@ public:
 	inline int GetIndexMember() const
 	{
 		// C_BaseEntity::index
+
 		//Msg("C_BaseEntity::index: %d""\n", *(int*)((byte*)(this) + OFF_CBASEENTITY_INDEX));
 		return *(int*)((byte*)(this) + OFF_CBASEENTITY_INDEX);
 	}
@@ -71,16 +75,16 @@ public:
 	inline bool IsAlive() const
 	{
 		// C_BaseEntity::m_lifeState
-		char m_lifeState = *(char*)((byte*)(this) + OFF_CBASEENTITY_LIFESTATE);
-		//Msg("C_BaseEntity::m_lifeState: %d""\n", m_lifeState);
+		char m_lifeState = *(char*)((byte*)(this) + m_iLifeStateOffset);
+		//Msg("C_BaseEntity::m_lifeState: %d, offset: %d""\n", m_lifeState, m_iLifeStateOffset);
 		return m_lifeState == LIFE_ALIVE;
 	}
 
 	inline int GetFlags() const
 	{
 		// C_BaseEntity::m_fFlags
-		//Msg("C_BaseEntity::m_fFlags: %d""\n", *(int*)((byte*)(this) + OFF_CBASEENTITY_FFLAGS));
-		return *(int*)((byte*)(this) + OFF_CBASEENTITY_FFLAGS);
+		//Msg("C_BaseEntity::m_fFlags: %d, offset: %d""\n", *(int*)((byte*)(this) + m_ifFlagsOffset), m_ifFlagsOffset);
+		return *(int*)((byte*)(this) + m_ifFlagsOffset);
 	}
 
 	inline void UpdateVisibility()
@@ -96,23 +100,23 @@ public:
 	inline float GetSimulationTime() const
 	{
 		// C_BaseEntity::m_flSimulationTime
-		//Msg("C_BaseEntity::GetSimulationTime: %f""\n", *(float*)((byte*)(this) + OFF_CBASEENTITY_SIMULATIONTIME));
-		return *(float*)((byte*)(this) + OFF_CBASEENTITY_SIMULATIONTIME);
+		//Msg("C_BaseEntity::GetSimulationTime: %f, offset: %d""\n", *(float*)((byte*)(this) + m_iSimulationTimeOffset), m_iSimulationTimeOffset);
+		return *(float*)((byte*)(this) + m_iSimulationTimeOffset);
 	}
 
 	int GetTeamNumber() const
 	{
 		// C_BaseEntity::m_iTeamNum
-		//Msg("C_BaseEntity::m_iTeamNum: %d""\n", *(int*)((byte*)(this) + OFF_CBASEENTITY_TEAMNUM));
-		return *(int*)((byte*)(this) + OFF_CBASEENTITY_TEAMNUM);
+		//Msg("C_BaseEntity::m_iTeamNum: %d""\n", *(int*)((byte*)(this) + m_iTeamNumOffset));
+		return *(int*)((byte*)(this) + m_iTeamNumOffset);
 	}
 
 	const Vector& GetViewOffset() const
 	{
 		// C_BaseEntity::m_vecViewOffset
-		//Vector m_vecViewOffset = *(Vector*)((byte*)(this) + OFF_CBASEENTITY_VIEWOFFSET);
+		//Vector m_vecViewOffset = *(Vector*)((byte*)(this) + m_iVecViewOffsetOffset);
 		//Msg("C_BaseEntity::m_vecViewOffset: %f %f %f""\n", m_vecViewOffset.x, m_vecViewOffset.y, m_vecViewOffset.z);
-		return *(Vector*)((byte*)(this) + OFF_CBASEENTITY_VIEWOFFSET);
+		return *(Vector*)((byte*)(this) + m_iVecViewOffsetOffset);
 	}
 
 	/*char const* GetClassname()
@@ -134,6 +138,13 @@ public:
 
 public:
 	static uintptr_t m_updateVisibilityFn;
+
+	static uint16_t m_iSimulationTimeOffset;
+	static uint16_t m_ifFlagsOffset;
+	static uint16_t m_iLifeStateOffset;
+	static uint16_t m_iNetworkMoveParentOffset;
+	static uint16_t m_iVecViewOffsetOffset;
+	static uint16_t m_iTeamNumOffset;
 };
 
 class C_BasePlayer :
@@ -165,13 +176,15 @@ public:
 		// C_BasePlayer::m_Local.m_vecPunchAngle
 		// m_Local.m_vecPunchAngle.Get();
 
-		//QAngle m_vecPunchAngle = *(QAngle*)((byte*)(this) + OFF_CBASEPLAYER_PUNCHANGLE);
+		//QAngle m_vecPunchAngle = *(QAngle*)((byte*)(this) + m_iVecPunchAngleOffset);
 		//Msg("C_BasePlayer::m_Local.m_vecPunchAngle: %f %f %f""\n", m_vecPunchAngle.x, m_vecPunchAngle.y, m_vecPunchAngle.z);
-		return *(QAngle*)((byte*)(this) + OFF_CBASEPLAYER_PUNCHANGLE);
+		return *(QAngle*)((byte*)(this) + m_iVecPunchAngleOffset);
 	}
 
 public:
 	static uintptr_t m_getViewModelFn;
+
+	static uint16_t m_iVecPunchAngleOffset;
 };
 
 class C_CSPlayer :
@@ -181,16 +194,21 @@ public:
 	inline float GetProgressBarStartTime()
 	{
 		// C_CSPlayer::m_flProgressBarStartTime
-		//Msg("C_CSPlayer::m_flProgressBarStartTime: %f""\n", *(float*)((byte*)(this) + OFF_CCSPLAYER_PROGRESSBARSTARTTIME));
-		return *(float*)((byte*)(this) + OFF_CCSPLAYER_PROGRESSBARSTARTTIME);
+		//Msg("C_CSPlayer::m_flProgressBarStartTime: %f""\n", *(float*)((byte*)(this) + m_iProgressBarStartTimeOffset));
+
+		return *(float*)((byte*)(this) + m_iProgressBarStartTimeOffset);
 	}
 
 	inline float GetProgressBarDuration()
 	{
 		// C_CSPlayer::m_flProgressBarDuration
-		//Msg("C_CSPlayer::m_flProgressBarDuration: %f""\n", *(float*)((byte*)(this) + OFF_CCSPLAYER_PROGRESSBARDURATION));
-		return *(float*)((byte*)(this) + OFF_CCSPLAYER_PROGRESSBARDURATION);
+		//Msg("C_CSPlayer::m_flProgressBarDuration: %f""\n", *(float*)((byte*)(this) + m_iProgressBarDurationOffset));
+
+		return *(float*)((byte*)(this) + m_iProgressBarDurationOffset);
 	}
+
+	static uint16_t m_iProgressBarDurationOffset;
+	static uint16_t m_iProgressBarStartTimeOffset;
 };
 
 class C_TerrorPlayer :
@@ -200,14 +218,16 @@ public:
 	inline C_TerrorPlayer* GetPounceVictim()
 	{
 		// C_TerrorPlayer::m_pounceVictim
-		EHANDLE m_pounceVictim = *(EHANDLE*)((byte*)(this) + OFF_CTERRORPLAYER_POUNCEVICTIM);
+
+		EHANDLE m_pounceVictim = *(EHANDLE*)((byte*)(this) + m_iPounceVictimOffset);
 		return (C_TerrorPlayer*)ClientEntityList()->GetClientEntityFromHandle(m_pounceVictim);
 	}
 
 	inline C_TerrorPlayer* GetJockeyAttacker()
 	{
 		// C_TerrorPlayer::m_jockeyAttacker
-		EHANDLE m_jockeyAttacker = *(EHANDLE*)((byte*)(this) + OFF_CTERRORPLAYER_JOCKEYATTACKER);
+
+		EHANDLE m_jockeyAttacker = *(EHANDLE*)((byte*)(this) + m_iJockeyAttackerOffset);
 		return (C_TerrorPlayer*)ClientEntityList()->GetClientEntityFromHandle(m_jockeyAttacker);
 	}
 
@@ -215,8 +235,9 @@ public:
 	{
 		if (IsAlive()) {
 			// C_TerrorPlayer::m_isIncapacitated
-			//Msg("C_TerrorPlayer::m_isIncapacitated: %d""\n", *(bool*)((byte*)(this) + OFF_CTERRORPLAYER_ISINCAPACITATED));
-			return *(bool*)((byte*)(this) + OFF_CTERRORPLAYER_ISINCAPACITATED);
+			//Msg("C_TerrorPlayer::m_isIncapacitated: %d""\n", *(bool*)((byte*)(this) + m_iIncappedOffset));
+
+			return *(bool*)((byte*)(this) + m_iIncappedOffset);
 		}
 
 		return false;
@@ -250,8 +271,9 @@ public:
 	inline ZombieClassType GetClass()
 	{
 		// C_TerrorPlayer::m_zombieClass
-		//Msg("C_TerrorPlayer::GetClass: %d""\n", *(ZombieClassType*)((byte*)(this) + OFF_CTERRORPLAYER_ZOMBIECLASS));
-		return *(ZombieClassType*)((byte*)(this) + OFF_CTERRORPLAYER_ZOMBIECLASS);
+		//Msg("C_TerrorPlayer::GetClass: %d""\n", *(ZombieClassType*)((byte*)(this) + m_iZombieClassOffset));
+
+		return *(ZombieClassType*)((byte*)(this) + m_iZombieClassOffset);
 	}
 
 	inline bool IsA(ZombieClassType zClass)
@@ -262,16 +284,27 @@ public:
 	inline bool IsHangingFromLedge()
 	{
 		// C_TerrorPlayer::m_isHangingFromLedge
-		//Msg("C_TerrorPlayer::IsHangingFromLedge: %d""\n", *(bool*)((byte*)(this) + OFF_CTERRORPLAYER_ISHANGINGFROMLEDGE));
-		return *(bool*)((byte*)(this) + OFF_CTERRORPLAYER_ISHANGINGFROMLEDGE);
+		//Msg("C_TerrorPlayer::IsHangingFromLedge: %d""\n", *(bool*)((byte*)(this) + m_iHangingFromLedgeOffset));
+
+		return *(bool*)((byte*)(this) + m_iHangingFromLedgeOffset);
 	}
 
 	inline bool IsHangingFromTongue()
 	{
 		// C_TerrorPlayer::m_isHangingFromTongue
-		//Msg("C_TerrorPlayer::IsHangingFromTongue: %d""\n", *(bool*)((byte*)(this) + OFF_CTERRORPLAYER_ISHANGINGFROMTONGUE));
-		return *(bool*)((byte*)(this) + OFF_CTERRORPLAYER_ISHANGINGFROMTONGUE);
+		//Msg("C_TerrorPlayer::IsHangingFromTongue: %d""\n", *(bool*)((byte*)(this) + m_iHangingFromTongueOffset));
+
+		return *(bool*)((byte*)(this) + m_iHangingFromTongueOffset);
 	}
+
+public:
+	static uint16_t m_iPounceVictimOffset;
+	static uint16_t m_iJockeyAttackerOffset;
+
+	static uint16_t m_iIncappedOffset;
+	static uint16_t m_iZombieClassOffset;
+	static uint16_t m_iHangingFromLedgeOffset;
+	static uint16_t m_iHangingFromTongueOffset;
 };
 
 class C_BaseViewModel :
