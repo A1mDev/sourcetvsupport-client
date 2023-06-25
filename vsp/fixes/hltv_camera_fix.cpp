@@ -2,6 +2,7 @@
 #include "wrappers.h"
 
 // A fix has been found by a 'A1m`'
+
 // This code exists in `server_srv.so` so we can easily replicate it.
 // Functions `const Vector& GetPlayerViewOffset(CTerrorPlayer* pPlayer, bool bDucked)` and `void CTerrorGameMovement::DecayPunchAngle()`
 
@@ -204,7 +205,7 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	fov = m_flFOV;
 
 	pPlayer->CalcViewModelView(eyeOrigin, eyeAngles);
-
+	
 	C_BaseViewModel* pViewModel = pPlayer->GetViewModel(0);
 	if (pViewModel != NULL) {
 		pViewModel->UpdateVisibility();
@@ -213,7 +214,7 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 
 const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvIsIncapacitated)
 {
-	// Netprop value `C_BasePlayer::m_Local.m_vecPunchAngle` during player incapacitation: 0.000000 0.000000 19.968750
+	// Netprop value `C_BasePlayer::m_Local.m_vecPunchAngle` during player incapacitation: 0.000000 0.000000 19.968750 (l4d1 and l4d2)
 	static QAngle vecIncapPunchAngleDef(0.0f, 0.0f, 19.968750f);
 
 	//static Vector vecPunchAngle;
@@ -226,8 +227,8 @@ const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvI
 	// This code exists in `server_srv.so`, function `void CTerrorGameMovement::DecayPunchAngle()`
 	if (g_CvarSourceTVSendLocalTables.GetBool()) {
 		/*Msg(VSP_LOG_PREFIX "Server cvar 'tv_send_local_data_tables' enabled, netprop `C_BasePlayer::m_Local.m_vecPunchAngle` applied: %f %f %f""\n", \
-				//pPlayer->GetPunchAngle().x, pPlayer->GetPunchAngle().y, pPlayer->GetPunchAngle().z);*/
-
+				pPlayer->GetPunchAngle().x, pPlayer->GetPunchAngle().y, pPlayer->GetPunchAngle().z);*/
+		
 		return pPlayer->GetPunchAngle();
 	}
 
@@ -281,7 +282,7 @@ bool CHLTVCameraFix::CreateDetour(HMODULE clientdll)
 
 		return false;
 	}
-
+	
 	m_Detour_CalcInEyeCamView->EnableDetour();
 
 	Msg(VSP_LOG_PREFIX "[C_HLTVCamera::CalcInEyeCamView] Enable detour. Detour ptr: %x, func ptr: %x, sig size: %d""\n", \

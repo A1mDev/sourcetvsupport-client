@@ -38,7 +38,7 @@
 	{
 		LinkChild(pParentEntity, this);
 	}
-
+	
 	+ if (!IsServerEntity())
 	+ {
 	+ 	m_hNetworkMoveParent = pParentEntity;

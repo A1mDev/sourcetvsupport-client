@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "dt_recv.h"
 #include "dt_common.h"
@@ -96,7 +97,17 @@ public:
 
 	uint16_t GetOffset(std::string sPropName)
 	{
-		return m_netProps.at(sPropName).second;
+		uint16_t iOffset = 0;
+		
+		try {
+			iOffset = m_netProps.at(sPropName).second;
+		} catch (std::out_of_range& e) {
+			const char* sError = (e.what() == NULL) ? "Unknown" : e.what();
+			Msg(VSP_LOG_PREFIX "Failed to get offset %s, error: %s ""\n", sPropName, sError);
+			iOffset = 0;
+		}
+
+		return iOffset;
 	}
 
 	inline int GetType(std::string sPropName)

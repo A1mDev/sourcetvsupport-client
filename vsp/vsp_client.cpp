@@ -8,7 +8,7 @@
 //#include "itoolentity.h"
 //#include "cdll_int.h"
 
-#define CLIENT_DLL_INTERFACE_VERSION "VClient016"
+#define CLIENT_DLL_INTERFACE_VERSION_CUSTOM "VClient016"
 
 CNetPropsManager g_NetProps;
 
@@ -80,9 +80,9 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 
 	Msg(VSP_LOG_PREFIX "[gameClientFactory] Received interface: %x ""\n", gameClientFactory);
 
-	g_pClientDLL = (IBaseClientDLLWrapper*)gameClientFactory(CLIENT_DLL_INTERFACE_VERSION, NULL);
-	if (!g_pClientDLL) {
-		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" CLIENT_DLL_INTERFACE_VERSION "\"\n");
+	g_pClientDLL = (IBaseClientDLLWrapper*)gameClientFactory(CLIENT_DLL_INTERFACE_VERSION_CUSTOM, NULL);
+	if (g_pClientDLL == NULL) {
+		Error(VSP_LOG_PREFIX "Couldn't retrieve interface \"" CLIENT_DLL_INTERFACE_VERSION_CUSTOM "\"\n");
 
 		return false;
 	}

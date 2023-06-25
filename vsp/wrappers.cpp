@@ -1,6 +1,6 @@
 #include "wrappers.h"
 #include "util.h"
-#include "l4d2_gamedata.h"
+#include "gamedata/gamedata.h"
 #include "netproprs.h"
 #include <string>
 
@@ -80,13 +80,17 @@ bool InitOffsets()
 		{ "CBaseEntity::moveparent", C_BaseEntity::m_iNetworkMoveParentOffset },
 		{ "CBaseEntity::m_iTeamNum", C_BaseEntity::m_iTeamNumOffset },
 		{ "CBasePlayer::m_vecPunchAngle", C_BasePlayer::m_iVecPunchAngleOffset },
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
 		{ "CCSPlayer::m_flProgressBarDuration", C_CSPlayer::m_iProgressBarDurationOffset },
+		{ "CTerrorPlayer::m_jockeyAttacker", C_TerrorPlayer::m_iJockeyAttackerOffset },
+#else
+		{ "CCSPlayer::m_iProgressBarDuration", C_CSPlayer::m_iProgressBarDurationOffset },
+#endif
 		{ "CCSPlayer::m_flProgressBarStartTime", C_CSPlayer::m_iProgressBarStartTimeOffset },
 		{ "CTerrorPlayer::m_isHangingFromLedge", C_TerrorPlayer::m_iHangingFromLedgeOffset },
 		{ "CTerrorPlayer::m_isHangingFromTongue", C_TerrorPlayer::m_iHangingFromTongueOffset },
 		{ "CTerrorPlayer::m_zombieClass", C_TerrorPlayer::m_iZombieClassOffset },
 		{ "CTerrorPlayer::m_isIncapacitated", C_TerrorPlayer::m_iIncappedOffset },
-		{ "CTerrorPlayer::m_jockeyAttacker", C_TerrorPlayer::m_iJockeyAttackerOffset },
 		{ "CTerrorPlayer::m_pounceVictim", C_TerrorPlayer::m_iPounceVictimOffset },
 	};
 
@@ -135,6 +139,7 @@ bool InitFunctions(HMODULE clientdll)
 bool InitGameRules(HMODULE clientdll)
 {
 	// We use a pointer to a pointer, because this class may not be available when changing the map
+	
 	g_ppGameRules = *(CTerrorGameRules***)(UTIL_SignatureToAddress(clientdll, SIG_GAMERULES_PTR) + 2); // + 2 first bytes (8B 0D)
 	if (g_ppGameRules == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get pointer to instance 'CTerrorGameRules'""\n");
@@ -158,12 +163,12 @@ bool InitGlobals(HMODULE clientdll)
 
 	g_pGlobals = *ppGlobals;
 	if (g_pGlobals == NULL) {
-		Msg("Failed to get pointer to class 'CGlobalVars': %x""\n", g_pGlobals);
+		Error("Failed to get pointer to class 'CGlobalVars': %x""\n", g_pGlobals);
 
 		return false;
 	}
 
-	Msg(VSP_LOG_PREFIX "[CGlobalVars] Received instance: %x. MaxClients: %d ""\n", g_pGlobals, g_pGlobals->maxClients);
+	Msg(VSP_LOG_PREFIX "[CGlobalVars] Received instance: %x. Realtime: %f ""\n", g_pGlobals, g_pGlobals->realtime);
 
 	return true;
 }

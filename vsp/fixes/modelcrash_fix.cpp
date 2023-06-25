@@ -85,7 +85,7 @@ ConVar g_CvarModelCrashFixDebug("l4d2_model_crash_fix_debug", "2", FCVAR_CLIENTD
 
 DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshData*, ModelInstanceHandle_t, handle)
 {
-	// Game L4D2 (engine.dll client, engine_srv.so server)
+	// Game L4D2, L4D1 (engine.dll client, engine_srv.so server)
 	// ModelInstance_t - size 260
 	// The size of this structure is very important to us. 
 	// Class 'CUtlLinkedList' adds the full size (260) of the structure + 4 (something in class 'CUtlLinkedList') bytes internally using operator [].
@@ -101,7 +101,7 @@ DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshDat
 	// size ModelInstance_t (260) + 4 bytes (something in class 'CUtlLinkedList').
 	// 
 	// Windows vtable offsets
-	// CModelRender::IDataCacheClient::CacheGet() = 12 - (IDataCacheClient *m_pCache->Get()). Calculated in hl2sdk-l4d2 vtable offset is correct.
+	// CModelRender::IDataCacheSection::CacheGet() = 12 - (IDataCacheSection *m_pCache->Get()). Calculated in hl2sdk-l4d2, hl2sdk-l4d vtable offset is correct.
 	// This code also exists on the server in library 'engine_srv.so'.
 	
 	if (!g_CvarModelCrashFix.GetBool()) {
@@ -179,7 +179,7 @@ bool CModelCrashFix::CreateDetour(HMODULE enginedll)
 		return false;
 	}
 
-	m_DetourFindOrCreateStaticPropColorData = DETOUR_CREATE_MEMBER(CModelRender__FindOrCreateStaticPropColorData, (void *)CModelRender__FindOrCreateStaticPropColorData_pfn);
+	m_DetourFindOrCreateStaticPropColorData = DETOUR_CREATE_MEMBER(CModelRender__FindOrCreateStaticPropColorData, (void*)CModelRender__FindOrCreateStaticPropColorData_pfn);
 	if (m_DetourFindOrCreateStaticPropColorData == NULL) {
 		Error(VSP_LOG_PREFIX "Could not obtain signature for 'CModelRender::FindOrCreateStaticPropColorData'""\n");
 

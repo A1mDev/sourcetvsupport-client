@@ -2,8 +2,8 @@
 #define _INCLUDE_WRAPPERS_VSP_H_
 
 #include "vsp_client.h"
-#include "l4d2_gamedata.h"
-#include "l4d2_constants.h"
+#include "gamedata/gamedata.h"
+#include "l4d_sdk/constants.h"
 #include "ehandle.h"
 #include "icliententitylist.h"
 #include "iclientunknown.h"
@@ -11,13 +11,14 @@
 #include "const.h" // LIFE_ALIVE
 
 #include "igameevents.h" // for include hltvcamera.h
+#include "l4d_sdk/GameEventListener.h" // for include hltvcamera.h, and l4d1 fix
 #include "usercmd.h" // for include hltvcamera.h
 extern IGameEventManager2* gameeventmanager; // Need for hltvcamera.h
 #include "hltvcamera.h"
 
 #include "shareddefs.h"
 //#include "itoolentity.h"
-#include "l4d2sdk/model.h"
+#include "l4d_sdk/model.h"
 #include "netproprs.h"
 
 class C_BaseEntity;
@@ -201,10 +202,15 @@ public:
 
 	inline float GetProgressBarDuration()
 	{
-		// C_CSPlayer::m_flProgressBarDuration
-		//Msg("C_CSPlayer::m_flProgressBarDuration: %f""\n", *(float*)((byte*)(this) + m_iProgressBarDurationOffset));
-
+		// l4d2 C_CSPlayer::m_flProgressBarDuration
+		// l4d1 C_CSPlayer:: m_iProgressBarDuration
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+		Msg("C_CSPlayer::m_flProgressBarDuration: %f""\n", *(float*)((byte*)(this) + m_iProgressBarDurationOffset));
 		return *(float*)((byte*)(this) + m_iProgressBarDurationOffset);
+#else
+		Msg("C_CSPlayer::m_iProgressBarDuration: %f""\n", float(*(int*)((byte*)(this) + m_iProgressBarDurationOffset)));
+		return float(*(int*)((byte*)(this) + m_iProgressBarDurationOffset));
+#endif
 	}
 
 	static uint16_t m_iProgressBarDurationOffset;
@@ -350,10 +356,10 @@ public:
 class IBaseClientDLLWrapper
 {
 public:
-	// 'hl2sdk-l4d2' has the wrong vtable table 'IBaseClientDLL' =(
+	// 'hl2sdk-l4d2' and 'hl2sdk-l4d1' has the wrong vtable table 'IBaseClientDLL' =(
 	inline ClientClass* GetAllClasses()
 	{
-		return vfunc<ClientClass*(__thiscall*)(IBaseClientDLLWrapper*)>(this, VTB_OFF_IBASECLIENTDLL_GETALLCLASSES)(this);
+		return vfunc<ClientClass* (__thiscall*)(IBaseClientDLLWrapper*)>(this, VTB_OFF_IBASECLIENTDLL_GETALLCLASSES)(this);
 	}
 };
 
@@ -363,7 +369,11 @@ public:
 	// 'hl2sdk-l4d2' has the wrong vtable table 'IEngineTool' =(
 	inline void GetClientFactory(CreateInterfaceFn& factory)
 	{
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
 		vfunc<void(__thiscall*)(IEngineToolWrapper*, CreateInterfaceFn&)>(this, VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY)(this, factory);
+#else 
+		this->GetClientFactory(factory);
+#endif
 	}
 };
 
