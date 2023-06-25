@@ -148,7 +148,7 @@ jobs:
             ../configure.py \
             --enable-optimize \
             --sm-path="${{ github.workspace }}/sourcemod-${{ matrix.sm_version }}"\
-            --mms-path="${{ github.workspace }}/metamod-${{ matrix.meta_version }}"\
+            --mms-path="${{ github.workspace }}/metamod-${{ matrix.meta_version }}"
           ambuild
           
       - name: Uploading package
