@@ -4,6 +4,7 @@
 // A fix has been found by a 'A1m`'
 
 // This code exists in `server_srv.so` so we can easily replicate it.
+// The code in game left4dead2 and in game left4dead1 is the same in these functions.
 // Functions `const Vector& GetPlayerViewOffset(CTerrorPlayer* pPlayer, bool bDucked)` and `void CTerrorGameMovement::DecayPunchAngle()`
 
 // When we watch a demo or broadcast, the code is called like this:
@@ -186,12 +187,11 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	//VectorAdd(m_vCamOrigin, pPlayer->GetViewOffset(), m_vCamOrigin);
 
 	if (bSurvIsIncapacitated) {
-		Vector vecView = VEC_VIEW_CUSTOM;
-
+		Vector vecView = VEC_DUCK_VIEW_CUSTOM;
 		float fIncapEyeHeight = survivor_incapacitated_eye_height.GetFloat();
-		float fProgressBurDuration = pPlayer->GetProgressBarPercent();
+		float fProgressBurPercent = pPlayer->GetProgressBarPercent();
 
-		vecView.z = (fIncapEyeHeight * (1.0 - fProgressBurDuration)) + (vecView.z * fProgressBurDuration);
+		vecView.z = (fIncapEyeHeight * (1.0f - fProgressBurPercent)) + (vecView.z * fProgressBurPercent);
 		
 		m_vCamOrigin += vecView;
 	} else if (pPlayer->GetFlags() & FL_DUCKING) {

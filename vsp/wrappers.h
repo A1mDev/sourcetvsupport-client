@@ -267,7 +267,7 @@ public:
 	// This code exists in 'server_srv.so' so we can easily replicate it.
 	bool IsProgressBarActive()
 	{
-		if (GetProgressBarDuration() < 0.0f) {
+		if (GetProgressBarDuration() <= 0.0f) {
 			return false;
 		}
 
