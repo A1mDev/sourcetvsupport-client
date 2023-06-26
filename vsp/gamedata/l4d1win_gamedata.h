@@ -84,12 +84,6 @@
 // which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
 // client.dll
 
-#define VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY				10
-// void IEngineTool::GetClientFactory(CreateInterfaceFn& factory)
-// Calculated with csgo source code and then checked
-// 'hl2sdk-l4d2' has the wrong vtable table 'IEngineTool', vtable offset 10
-// client.dll
-
 #define VTB_OFF_IBASECLIENTDLL_GETALLCLASSES				7
 // ClientClass* IBaseClientDLL::GetAllClasses()
 // 'hl2sdk-l4d2' has the wrong vtable table 'IBaseClientDLL', vtable offset 6

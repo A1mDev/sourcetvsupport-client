@@ -192,7 +192,7 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 		float fProgressBurDuration = pPlayer->GetProgressBarPercent();
 
 		vecView.z = (fIncapEyeHeight * (1.0 - fProgressBurDuration)) + (vecView.z * fProgressBurDuration);
-
+		
 		m_vCamOrigin += vecView;
 	} else if (pPlayer->GetFlags() & FL_DUCKING) {
 		m_vCamOrigin += VEC_DUCK_VIEW_CUSTOM;

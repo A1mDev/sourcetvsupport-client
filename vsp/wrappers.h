@@ -20,6 +20,7 @@ extern IGameEventManager2* gameeventmanager; // Need for hltvcamera.h
 //#include "itoolentity.h"
 #include "l4d_sdk/model.h"
 #include "netproprs.h"
+#include "ienginetool.h"
 
 class C_BaseEntity;
 class C_BaseViewModel;
@@ -205,10 +206,10 @@ public:
 		// l4d2 C_CSPlayer::m_flProgressBarDuration
 		// l4d1 C_CSPlayer:: m_iProgressBarDuration
 #if SOURCE_ENGINE == SE_LEFT4DEAD2
-		Msg("C_CSPlayer::m_flProgressBarDuration: %f""\n", *(float*)((byte*)(this) + m_iProgressBarDurationOffset));
+		//Msg("C_CSPlayer::m_flProgressBarDuration: %f""\n", *(float*)((byte*)(this) + m_iProgressBarDurationOffset));
 		return *(float*)((byte*)(this) + m_iProgressBarDurationOffset);
 #else
-		Msg("C_CSPlayer::m_iProgressBarDuration: %f""\n", float(*(int*)((byte*)(this) + m_iProgressBarDurationOffset)));
+		//Msg("C_CSPlayer::m_iProgressBarDuration: %f""\n", float(*(int*)((byte*)(this) + m_iProgressBarDurationOffset)));
 		return float(*(int*)((byte*)(this) + m_iProgressBarDurationOffset));
 #endif
 	}
@@ -363,7 +364,8 @@ public:
 	}
 };
 
-class IEngineToolWrapper
+class IEngineToolWrapper :
+	public IEngineTool
 {
 public:
 	// 'hl2sdk-l4d2' has the wrong vtable table 'IEngineTool' =(
@@ -372,7 +374,7 @@ public:
 #if SOURCE_ENGINE == SE_LEFT4DEAD2
 		vfunc<void(__thiscall*)(IEngineToolWrapper*, CreateInterfaceFn&)>(this, VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY)(this, factory);
 #else 
-		this->GetClientFactory(factory);
+		((IEngineTool*)this)->GetClientFactory(factory);
 #endif
 	}
 };

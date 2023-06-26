@@ -168,7 +168,7 @@ bool InitGlobals(HMODULE clientdll)
 		return false;
 	}
 
-	Msg(VSP_LOG_PREFIX "[CGlobalVars] Received instance: %x. Realtime: %f ""\n", g_pGlobals, g_pGlobals->realtime);
+	Msg(VSP_LOG_PREFIX "[CGlobalVars] Received instance: %x""\n", g_pGlobals);
 
 	return true;
 }
