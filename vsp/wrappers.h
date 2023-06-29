@@ -182,6 +182,16 @@ public:
 		return *(QAngle*)((byte*)(this) + m_iVecPunchAngleOffset);
 	}
 
+	inline QAngle& GetPunchAngleRef()
+	{
+		// C_BasePlayer::m_Local.m_vecPunchAngle
+		// m_Local.m_vecPunchAngle.Get();
+
+		//QAngle m_vecPunchAngle = *(QAngle*)((byte*)(this) + m_iVecPunchAngleOffset);
+		//Msg("C_BasePlayer::m_Local.m_vecPunchAngle: %f %f %f""\n", m_vecPunchAngle.x, m_vecPunchAngle.y, m_vecPunchAngle.z);
+		return *(QAngle*)((byte*)(this) + m_iVecPunchAngleOffset);
+	}
+
 public:
 	static uintptr_t m_getViewModelFn;
 

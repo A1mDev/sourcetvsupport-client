@@ -215,55 +215,62 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvIsIncapacitated)
 {
 	// Netprop value `C_BasePlayer::m_Local.m_vecPunchAngle` during player incapacitation: 0.000000 0.000000 19.968750 (l4d1 and l4d2)
-	static QAngle vecIncapPunchAngleDef(0.0f, 0.0f, 19.968750f);
-
-	//static Vector vecPunchAngle;
-	//static ConVarRef survivor_incapacitated_roll("survivor_incapacitated_roll");
-	//static ConVarRef punch_angle_decay_rate("punch_angle_decay_rate");
+	// This code has an accumulative effect, the `C_BasePlayer::m_Local.m_vecPunchAngle` - z accumulates over time (never exceeds 20 on the z-axis).
 
 	// We need to know if the server sends this data from local tables
 	// If not, try to reproduce the code during incap
-
 	// This code exists in `server_srv.so`, function `void CTerrorGameMovement::DecayPunchAngle()`
+
 	if (g_CvarSourceTVSendLocalTables.GetBool()) {
 		/*Msg(VSP_LOG_PREFIX "Server cvar 'tv_send_local_data_tables' enabled, netprop `C_BasePlayer::m_Local.m_vecPunchAngle` applied: %f %f %f""\n", \
 				pPlayer->GetPunchAngle().x, pPlayer->GetPunchAngle().y, pPlayer->GetPunchAngle().z);*/
-		
+
 		return pPlayer->GetPunchAngle();
 	}
 
+	// We can't use this code because the vector has a cumulative effect and we need to save it somewhere, clean it up, and so on,
+	// and netprop `C_BasePlayer::m_Local.m_vecPunchAngle` is cleared every frame for no clear reason, 
+	// even if the server does not send this data (example at the bottom).
+#if 0
+	static ConVarRef survivor_incapacitated_roll("survivor_incapacitated_roll");
+	static ConVarRef punch_angle_decay_rate("punch_angle_decay_rate");
+
+	QAngle &vecPunchAngleMember = pPlayer->GetPunchAngleRef();
+
+	// Clear the vector if the player is no longer incapacitated
 	if (!bSurvIsIncapacitated) {
+		vecPunchAngleMember = vec3_angle;
 		return vec3_angle;
 	}
 
-	// Netprop `C_BasePlayer::m_Local.m_vecPunchAngle` not available here so we don't use
+	// Netprop `C_BasePlayer::m_Local.m_vecPunchAngle` not available here so try to reproduce the code
 	//Msg(VSP_LOG_PREFIX "Server cvar 'tv_send_local_data_tables' disabled attempt to reproduce code during player incapacitation""\n");
 
-	/*float fRoll = survivor_incapacitated_roll.GetFloat();
+	float fRoll = survivor_incapacitated_roll.GetFloat();
 	if (fRoll == 0.0f) {
+		vecPunchAngleMember = vec3_angle;
 		return vec3_angle;
 	}
 
-	//vec_t fPunchAngleZ = m_pPlayer->GetPunchAngle().z;
-	//QAngle vecPunchAngle(m_pPlayer->GetPunchAngle().x, m_pPlayer->GetPunchAngle().y, 0.0f);
-	vec_t fPunchAngleZ = 0.0f;
-	vecPunchAngle = Vector(0.0f, 0.0f, 0.0f);
+	Vector vecPunchAngleResult = Vector(pPlayer->GetPunchAngle().x, pPlayer->GetPunchAngle().y, 0.0f);
 
-	float fScale = VectorNormalize(vecPunchAngle);
-
+	float fScale = VectorNormalize(vecPunchAngleResult);
 	fScale = fScale - (fScale * 0.5f + punch_angle_decay_rate.GetFloat()) * g_pGlobals->frametime;
 	fScale = MAX(fScale, 0.0f);
-	vecPunchAngle *= fScale;
+	vecPunchAngleResult *= fScale;
 
-	vecPunchAngle.z = ( ( ( fRoll - fPunchAngleZ ) * g_pGlobals->frametime ) * 10.0f ) + fPunchAngleZ;
+	vecPunchAngleResult.z = (fRoll - pPlayer->GetPunchAngle().z) * (g_pGlobals->frametime * 10.0f) + pPlayer->GetPunchAngle().z;
+	
+	/*Msg(VSP_LOG_PREFIX "Applied vector during player incapacitation. vecPunchAngle: %f %f %f, frametime: %f, survivor_incapacitated_roll: %f, punch_angle_decay_rate: %f""\n", \
+		vecPunchAngleResult.x, vecPunchAngleResult.y, vecPunchAngleResult.z, g_pGlobals->frametime, fRoll, punch_angle_decay_rate.GetFloat());*/
+	
+	vecPunchAngleMember = QAngle(vecPunchAngleResult.x, vecPunchAngleResult.y, vecPunchAngleResult.z);
+	return vecPunchAngleMember;
+#else
+	static QAngle vecIncapPunchAngleDef(0.0f, 0.0f, 19.968750f);
 
-	Msg(VSP_LOG_PREFIX "Applied vector during player incapacitation. vecPunchAngle: %f %f %f, frametime: %f, survivor_incapacitated_roll: %f, punch_angle_decay_rate: %f""\n", \
-			vecPunchAngle.x, vecPunchAngle.y, vecPunchAngle.z, g_pGlobals->frametime, fRoll, punch_angle_decay_rate.GetFloat());
-		
-	return *(QAngle*)(&vecPunchAngle);*/
-
-	// The above code returns wrong value, we return default value during player incapacitation
 	return vecIncapPunchAngleDef;
+#endif
 }
 
 bool CHLTVCameraFix::CreateDetour(HMODULE clientdll)
@@ -298,3 +305,149 @@ void CHLTVCameraFix::DestroyDetour()
 		m_Detour_CalcInEyeCamView = NULL;
 	}
 }
+
+/*
+Server gpGlobals->frametime 0.009999
+Client gpGlobals->frametime 0.005606
+
+// Server
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle: -1.840965 0.000000 0.000000
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -1.631760 0.000000 1.999999
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -1.423601 0.000000 3.799999
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -1.216483 0.000000 5.419999
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -1.010400 0.000000 6.877999
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -0.805348 0.000000 8.190198
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -0.601321 0.000000 9.371178
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -0.398315 0.000000 10.434061
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : -0.196323 0.000000 11.390654
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 12.251588
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 13.026430
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 13.723787
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 14.351408
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 14.916268
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 15.424641
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 15.882177
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 16.293958
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 16.664562
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 16.998106
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 17.298295
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 17.568466
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 17.811618
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.030456
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.227411
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.404670
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.564203
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.707782
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.837003
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 18.953302
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.057971
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.152173
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.236955
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.313259
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.381933
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.443738
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.499364
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.549428
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.594486
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.635038
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.671533
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.704380
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.733942
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.760547
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.784492
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.806043
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.825439
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.842895
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.858606
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.872745
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.885471
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.896924
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.907232
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.916509
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.924858
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.932373
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.939136
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.945222
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.950700
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.955631
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.960067
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.964061
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.967655
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.970890
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.973800
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.976421
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.978778
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.980901
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.982810
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.984529
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.986076
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.987468
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.988721
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.989849
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.990863
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.991777
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.992599
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.993339
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.994005
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.994604
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.995143
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.995630
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.996067
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.996459
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.996814
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.997133
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.997419
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.997676
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.997909
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.998119
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.998308
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.998477
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.998630
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.998767
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.998891
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999002
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999101
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999191
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999271
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999343
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999408
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999467
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999521
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999568
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999612
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999650
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999685
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999715
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999744
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999769
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999792
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999813
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999832
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999849
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999864
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999877
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999889
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999900
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999910
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999919
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999927
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999935
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999940
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999946
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999952
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999956
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999959
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999963
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999967
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999971
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999973
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999975
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999977
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999979
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999980
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999982
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999984
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999986
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999988
+[CTerrorGameMovement::DecayPunchAngle Pre] Coach incapacitated, m_vecPunchAngle : 0.000000 0.000000 19.999990
+*/
