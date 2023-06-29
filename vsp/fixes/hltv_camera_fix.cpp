@@ -189,9 +189,9 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	if (bSurvIsIncapacitated) {
 		Vector vecView = VEC_DUCK_VIEW_CUSTOM;
 		float fIncapEyeHeight = survivor_incapacitated_eye_height.GetFloat();
-		float fProgressBurPercent = pPlayer->GetProgressBarPercent();
+		float fProgressBarPercent = pPlayer->GetProgressBarPercent();
 
-		vecView.z = (fIncapEyeHeight * (1.0f - fProgressBurPercent)) + (vecView.z * fProgressBurPercent);
+		vecView.z = (fIncapEyeHeight * (1.0f - fProgressBarPercent)) + (vecView.z * fProgressBarPercent);
 		
 		m_vCamOrigin += vecView;
 	} else if (pPlayer->GetFlags() & FL_DUCKING) {

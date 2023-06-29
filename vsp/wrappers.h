@@ -13,7 +13,6 @@
 #include "igameevents.h" // for include hltvcamera.h
 #include "l4d_sdk/GameEventListener.h" // for include hltvcamera.h, and l4d1 fix
 #include "usercmd.h" // for include hltvcamera.h
-extern IGameEventManager2* gameeventmanager; // Need for hltvcamera.h
 #include "hltvcamera.h"
 
 #include "shareddefs.h"
@@ -31,7 +30,7 @@ extern CGlobalVars* g_pGlobals;
 extern CTerrorGameRules** g_ppGameRules;
 //extern IClientTools* g_pClientTools;
 
-typedef CHandle<C_BaseEntity> EHANDLE; // The client's version of EHANDLE.
+typedef CHandle<C_BaseEntity> CL_EHANDLE; // The client's version of EHANDLE.
 
 template <typename fn>
 __forceinline fn vfunc(void* classbase, int func_index)
@@ -44,16 +43,16 @@ inline IClientEntityList* ClientEntityList();
 class C_BaseEntity
 {
 public:
-	inline EHANDLE GetMoveParentMember()
+	inline CL_EHANDLE GetMoveParentMember()
 	{
 		// C_BaseEntity::m_pMoveParent
-		return *(EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_MOVEPARENT);
+		return *(CL_EHANDLE*)((byte*)(this) + OFF_CBASEENTITY_MOVEPARENT);
 	}
 
-	inline EHANDLE &GetNetworkMoveParentMemberRef()
+	inline CL_EHANDLE& GetNetworkMoveParentMemberRef()
 	{
 		// C_BaseEntity::m_hNetworkMoveParent
-		return *(EHANDLE*)((byte*)(this) + m_iNetworkMoveParentOffset);
+		return *(CL_EHANDLE*)((byte*)(this) + m_iNetworkMoveParentOffset);
 	}
 
 	inline bool IsServerEntity() const
@@ -226,7 +225,7 @@ public:
 	{
 		// C_TerrorPlayer::m_pounceVictim
 
-		EHANDLE m_pounceVictim = *(EHANDLE*)((byte*)(this) + m_iPounceVictimOffset);
+		CL_EHANDLE m_pounceVictim = *(CL_EHANDLE*)((byte*)(this) + m_iPounceVictimOffset);
 		return (C_TerrorPlayer*)ClientEntityList()->GetClientEntityFromHandle(m_pounceVictim);
 	}
 
@@ -234,7 +233,7 @@ public:
 	{
 		// C_TerrorPlayer::m_jockeyAttacker
 
-		EHANDLE m_jockeyAttacker = *(EHANDLE*)((byte*)(this) + m_iJockeyAttackerOffset);
+		CL_EHANDLE m_jockeyAttacker = *(CL_EHANDLE*)((byte*)(this) + m_iJockeyAttackerOffset);
 		return (C_TerrorPlayer*)ClientEntityList()->GetClientEntityFromHandle(m_jockeyAttacker);
 	}
 

@@ -63,9 +63,9 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 	C_BaseEntity* pThis = (C_BaseEntity*)this;
 	bool bDebug = g_CvarSetParentFixDebug.GetBool();
 
-	EHANDLE newParentHandle;
+	CL_EHANDLE newParentHandle;
 	newParentHandle.Set(pParentEntity);
-	EHANDLE& m_pMoveParent = pThis->GetMoveParentMember();
+	CL_EHANDLE& m_pMoveParent = pThis->GetMoveParentMember();
 
 	/*if (bDebug) {
 		Msg(VSP_LOG_PREFIX "[C_BaseEntity__SetParent][1] This: %x, pParentEntity: %x, iParentAttachment: %d, index: %d""\n", \
@@ -95,7 +95,7 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 			newParentHandle.ToInt(), m_pMoveParent.ToInt());
 	}
 
-	EHANDLE& m_hNetworkMoveParent = pThis->GetNetworkMoveParentMemberRef();
+	CL_EHANDLE& m_hNetworkMoveParent = pThis->GetNetworkMoveParentMemberRef();
 
 	if (!pThis->IsServerEntity()) {
 		int iOldValue = m_hNetworkMoveParent.ToInt();
