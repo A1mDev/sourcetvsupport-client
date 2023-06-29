@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_FIXES_VSP_H_
 #define _INCLUDE_FIXES_VSP_H_
 
-#include "../CDetour/detours.h"
+#include "../includes/CDetour/detours.h"
 #include "convar.h"
 
 class C_TerrorPlayer;

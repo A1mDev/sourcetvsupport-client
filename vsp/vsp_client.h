@@ -3,9 +3,9 @@
 
 // VSP Interface
 #include <iserverplugin.h>
-#include "CDetour/detours.h"
+#include "includes/CDetour/detours.h"
 #include "util.h"
-#include "MemoryUtils/MemoryUtils.h"
+#include "includes/MemoryUtils/MemoryUtils.h"
 
 #define VSP_VERSION			"1.3"
 #define VSP_LOG_PREFIX		"[STVS] "

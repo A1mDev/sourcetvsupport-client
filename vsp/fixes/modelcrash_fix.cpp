@@ -1,6 +1,5 @@
 #include "fixes.h"
 #include "wrappers.h"
-#include "ivmodelrender.h"
 
 #define MODEL_CRASH_DEBUG 0
 

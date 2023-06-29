@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_UTIL_VSP_H_
 #define _INCLUDE_UTIL_VSP_H_
 
-#include "MemoryUtils/MemoryUtils.h" // HMODULE
+#include "includes/MemoryUtils/MemoryUtils.h" // HMODULE
 
 size_t UTIL_StringToSignature(const char* str, char buffer[], size_t maxlength);
 
