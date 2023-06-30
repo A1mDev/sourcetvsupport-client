@@ -1,26 +1,37 @@
 #include "fixes.h"
 #include "wrappers.h"
 
-// A fix has been found by a 'A1m`'
+// Wrote fix code and found fix 'A1m`'.
 
-// This code exists in `server_srv.so` so we can easily replicate it.
-// The code in game left4dead2 and in game left4dead1 is the same in these functions.
+// In the game l4d1 and l4d2 the same problems with the camera when watching a demo or stream from sourceTV. 
+// The problem exists with both camera offset and rotation. The problem is that the code inside class 'C_HLTVCamera' never adapted to games l4d1 and l4d2
+// and many cases of camera offset or rotation are ignored.
+// A few examples (maybe some other cases):
+// 1) When you are a jockey, hunter or smoker and you attack a survivor (same for survivor).
+// 2) When you are a survivor and use a first aid kit.
+// 3) When you play as a tankand pick up a rock.
+// 4) When you are a tank and the death animation is playing.
+// 5) Wrong first person view offset when the player is incapacitated, our view offset is at the same height when the player is standing.
+//
+// At this point, the first person view changes to a 3rd person view with different camera offsets.
+// We see the wrong first person animation because the view should not be in first person 
+// and in these cases the animation was never adapted to first person (not in all cases).
+
+// We will call a function that handles all or part of these cases and play the code with camera rotation when the player is incapacitated, 
+// if the server does not send us data from the local table. I don't know what other cases of camera rotation are so noticeable other than this.
+
+// Part of the code is on the server in library 'server_srv.so' l4d2 and library 'server.so' l4d1, we can reproduce this code.
+// The code in game l4d2 and in game l4d1 is the same in these functions.
 // Functions `const Vector& GetPlayerViewOffset(CTerrorPlayer* pPlayer, bool bDucked)` and `void CTerrorGameMovement::DecayPunchAngle()`
 
 // When we watch a demo or broadcast, the code is called like this:
 // `CViewRender::SetUpView()->C_HLTVCamera::CalcView(..)->C_HLTVCamera::CalcInEyeCamView(...)`
 
-// ## Bug description:
-// 1) Wrong first person view offset when the player is incapacitated, 
-//		our view offset is at the same height when the player is standing
-
 // `C_BasePlayer::m_Local.m_vecPunchAngle` - This prop is not available to us without modifying the server.
 // Need to add code to function `SendProxy_SendLocalDataTable` for server.
 
-// Code ignores crosshair position during player incapacitation :
-// ## Game code to fix
-
-/*
+// ## Game code to fix:
+#if 0
 // Client code:
 void C_HLTVCamera::CalcInEyeCamView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov )
 {
@@ -45,32 +56,21 @@ void C_HLTVCamera::CalcInEyeCamView( Vector& eyeOrigin, QAngle& eyeAngles, float
 	+ // Apply punch angle
 	+ VectorAdd( m_aCamAngle, pPlayer->GetPunchAngle(), m_aCamAngle );
 
-	+ bool bSurvIsIncapacitated = ( pPlayer->GetTeamNumber() == TEAM_SURVIVOR && pPlayer->IsIncapacitated()
-	+ 							&& !pPlayer->IsHangingFromLedge() && !pPlayer->IsHangingFromTongue() );
-
-	+ if ( bSurvIsIncapacitated )
-	+ {
-	+ 	Vector vecView = VEC_DUCK_VIEW;
-
-	+ 	float fIncapEyeHeight = survivor_incapacitated_eye_height.GetFloat();
-	+ 	float fProgressBurDuration = pPlayer->GetProgressBarPercent();
-
-	+ 	vecView.z = ( fIncapEyeHeight * ( 1.0 - fProgressBurDuration ) ) + ( vecView.z * fProgressBurDuration );
-
-	+ 	m_vCamOrigin += vecView;
-	+ }
-	else if ( pPlayer->GetFlags() & FL_DUCKING )
-	{
-		m_vCamOrigin += VEC_DUCK_VIEW;
-	}
-	else
-	{
-		m_vCamOrigin += VEC_VIEW;
-	}
+	- if ( pPlayer->GetFlags() & FL_DUCKING )
+	- {
+	- 	m_vCamOrigin += VEC_DUCK_VIEW;
+	- }
+	- else
+	- {
+	- 	m_vCamOrigin += VEC_VIEW;
+	- }
 
 	eyeOrigin = m_vCamOrigin;
 	eyeAngles = m_aCamAngle;
 	fov = m_flFOV;
+
+	+ float fZNear, fZFar;
+	+ pPlayer->CalcView(eyeOrigin, eyeAngles, fZNear, fZFar, fov);
 
 	pPlayer->CalcViewModelView( eyeOrigin, eyeAngles );
 
@@ -105,7 +105,7 @@ void* SendProxy_SendLocalDataTable( const SendProp *pProp, const void *pStruct, 
 	return ( void * )pVarData;
 }
 REGISTER_SEND_PROXY_NON_MODIFIED_POINTER( SendProxy_SendLocalDataTable );
-*/
+#endif
 
 #define VEC_DUCK_VIEW_CUSTOM	GetGameRules()->GetViewVectors()->m_vDuckView
 #define VEC_VIEW_CUSTOM			GetGameRules()->GetViewVectors()->m_vView
@@ -180,12 +180,11 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	//
 	// When a player dies while playing as a tank, the code also adds this view offset, 
 	// since the tank is also incapacitated, we need to remove this effect for the tank.
-	//
-	// We can do it differently, we can try netprop `m_vecViewOffset` here,
-	// it will have the same effect, but how correct is this?
 
-	//VectorAdd(m_vCamOrigin, pPlayer->GetViewOffset(), m_vCamOrigin);
+	// We do not need this code, apparently it is already inside function 'C_BasePlayer::CalcView', 
+	// if we use it, then the camera offset will be incorrect.
 
+#if 0
 	if (bSurvIsIncapacitated) {
 		Vector vecView = VEC_DUCK_VIEW_CUSTOM;
 		float fIncapEyeHeight = survivor_incapacitated_eye_height.GetFloat();
@@ -199,10 +198,15 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	} else {
 		m_vCamOrigin += VEC_VIEW_CUSTOM;
 	}
-
+#endif
+	
 	eyeOrigin = m_vCamOrigin;
 	eyeAngles = m_aCamAngle;
 	fov = m_flFOV;
+
+	// Function 'C_HLTVCamera::CalcView' makes this function call in the same way (C_BasePlayer::CalcView);
+	float fZNear, fZFar;
+	pPlayer->CalcView(eyeOrigin, eyeAngles, fZNear, fZFar, fov);
 
 	pPlayer->CalcViewModelView(eyeOrigin, eyeAngles);
 	

@@ -115,4 +115,12 @@
 // Vtable offset is inside function 'C_HLTVCamera::CalcInEyeCamView'
 // client.dll
 
+#define VTB_OFF_CBASEPLAYER_CALCVIEW						231
+// void CBasePlayer::CalcView(Vector& eyeOrigin, QAngle& eyeAngles, float& zNear, float& zFar, float& fov)
+// The vtable can be found inside function 'C_HLTVCamera::CalcView', see 'hl2sdk-l4d'. 
+// Function ''C_HLTVCamera::CalcView' can be found using function 'C_HLTVCamera::CalcInEyeCamView',
+// since it calls this function 'C_HLTVCamera::CalcInEyeCamView' internally. 
+// Call order '..->CViewRender::SetUpView()->C_HLTVCamera::CalcView()->C_HLTVCamera::CalcInEyeCamView()'.
+// client.dll
+
 #endif // _INCLUDE_L4D1_2_GAMEDATA_VSP_H_

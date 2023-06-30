@@ -192,6 +192,11 @@ public:
 		return *(QAngle*)((byte*)(this) + m_iVecPunchAngleOffset);
 	}
 
+	inline void CalcView(Vector& eyeOrigin, QAngle& eyeAngles, float& zNear, float& zFar, float& fov)
+	{
+		vfunc<void(__thiscall*)(C_BasePlayer*, Vector&, QAngle&, float&, float&, float&)>(this, VTB_OFF_CBASEPLAYER_CALCVIEW)(this, eyeOrigin, eyeAngles, zNear, zFar, fov);
+	}
+
 public:
 	static uintptr_t m_getViewModelFn;
 

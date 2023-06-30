@@ -2,7 +2,7 @@
 #include "vsp_client.h"
 #include "wrappers.h"
 
-// A fix has been found by a 'shqke'
+// A fix has been found by a 'shqke', wrote fix code 'A1m`'.
 
 // ## Bug description:
 // 1) Missing arms models/blinking world model attachments during SourceTV footage playback
@@ -10,11 +10,11 @@
 // 3) Missing body parts from infected commons, these body parts appeared at zero coordinates on the map.
 
 // ## Game code to fix
-
+#if 0
 //-----------------------------------------------------------------------------
 // Unlinks from hierarchy
 //-----------------------------------------------------------------------------
-/*void C_BaseEntity::SetParent(C_BaseEntity* pParentEntity, int iParentAttachment)
+void C_BaseEntity::SetParent(C_BaseEntity* pParentEntity, int iParentAttachment)
 {
 	// NOTE: This version is meant to be called *outside* of PostDataUpdate
 	// as it assumes the moveparent has a valid handle
@@ -53,7 +53,8 @@
 	SetAbsOrigin(vecAbsOrigin);
 	SetAbsAngles(angAbsRotation);
 	SetAbsVelocity(vecAbsVelocity);
-}*/
+}
+#endif
 
 ConVar g_CvarSetParentFix("l4d2_setparent_fix", "1", FCVAR_CLIENTDLL, "Toggle fix SetParent. 0 - Disable, 1 - Enable.");
 ConVar g_CvarSetParentFixDebug("l4d2_setparent_fix_debug", "0", FCVAR_CLIENTDLL, "Enable SetParent fix debug. 0 - Disable, 1 - Enable.");

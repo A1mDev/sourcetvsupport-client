@@ -10,12 +10,13 @@
 std::map<void*, std::string> g_mapModels;
 #endif
 
-// A fix has been found by a 'A1m`'
+// Wrote fix code and found fix 'A1m`'.
 
 // I don't think this is a full fix, but this code exists in game cs go and game tf2, but in game l4d2 this code does not exist, maybe in l4d1
 // This code also exists on the server in library 'engine_srv.so'.
 // Client crash occurs with different models, maybe the models have not been deleted somewhere (some kind of memory is not cleared)?
 // Command 'record' for recording demos affects this.
+// This problem exists in game l4d1 and in game l4d2.
 
 enum
 {
@@ -26,12 +27,12 @@ enum
 ConVar g_CvarModelCrashFix("l4d2_model_crash_fix", "1", FCVAR_CLIENTDLL, "Toggle fix ModelCrash. 0 - Disable, 1 - Enable.");
 ConVar g_CvarModelCrashFixDebug("l4d2_model_crash_fix_debug", "2", FCVAR_CLIENTDLL, "Enable ModelCrash fix debug. 1 - print all debug messages, 2 - only when fix is applied.");
 
-//
+#if 0
 //-----------------------------------------------------------------------------
 // Allocates the static prop color data meshes
 //-----------------------------------------------------------------------------
 // FIXME? : Move this to StudioRender?
-/*CColorMeshData* CModelRender::FindOrCreateStaticPropColorData(ModelInstanceHandle_t handle)
+CColorMeshData* CModelRender::FindOrCreateStaticPropColorData(ModelInstanceHandle_t handle)
 {
 	if (handle == MODEL_INSTANCE_INVALID)
 	{
@@ -80,7 +81,8 @@ ConVar g_CvarModelCrashFixDebug("l4d2_model_crash_fix_debug", "2", FCVAR_CLIENTD
 	pColorMeshData = CacheGet(instance.m_ColorMeshHandle);
 	
 	return pColorMeshData;
-}*/
+}
+#endif
 
 DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshData*, ModelInstanceHandle_t, handle)
 {

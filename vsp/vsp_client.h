@@ -7,9 +7,9 @@
 #include "util.h"
 #include "includes/MemoryUtils/MemoryUtils.h"
 
-#define VSP_VERSION			"1.3"
+#define VSP_VERSION			"1.5"
 #define VSP_LOG_PREFIX		"[STVS] "
-#define VSP_DEBUG			1
+#define VSP_DEBUG			0
 
 class VSPClient :
 	public IServerPluginCallbacks,
