@@ -7,7 +7,7 @@
 #include "util.h"
 #include "includes/MemoryUtils/MemoryUtils.h"
 
-#define VSP_VERSION			"1.5"
+#define VSP_VERSION			"1.6"
 #define VSP_LOG_PREFIX		"[STVS] "
 #define VSP_DEBUG			0
 

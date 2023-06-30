@@ -53,9 +53,6 @@ void C_HLTVCamera::CalcInEyeCamView( Vector& eyeOrigin, QAngle& eyeAngles, float
 	m_vCamOrigin = pPlayer->GetAbsOrigin();
 	m_flFOV = pPlayer->GetFOV();
 
-	+ // Apply punch angle
-	+ VectorAdd( m_aCamAngle, pPlayer->GetPunchAngle(), m_aCamAngle );
-
 	- if ( pPlayer->GetFlags() & FL_DUCKING )
 	- {
 	- 	m_vCamOrigin += VEC_DUCK_VIEW;
@@ -170,8 +167,12 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 	// For example, the recoil of a weapon during shooting, if a tank rock hits you, if a teammate shoots at you.
 	// `C_BasePlayer::m_Local.m_vecPunchAngle` - This prop is not available to us without modifying the server.
 	// Need to add code to function `SendProxy_SendLocalDataTable` for server.
+
+	// We don't need this code either, since function 'C_BasePlayer::CalcView' applies netprop 'C_BasePlayer::m_Local.m_vecPunchAngle' if it's available.
+#if 0
 	VectorAdd(m_aCamAngle, CHLTVCameraFix::GetPunchAngle(pPlayer, bSurvIsIncapacitated), m_aCamAngle);
-	
+#endif
+
 	// This code exists in `server_srv.so` so we can easily replicate it, 
 	// function `const Vector& GetPlayerViewOffset(CTerrorPlayer * pPlayer, bool bDucked)`.
 
@@ -199,24 +200,29 @@ DETOUR_DECL_MEMBER3(C_HLTVCamera__CalcInEyeCamView, void, Vector&, eyeOrigin, QA
 		m_vCamOrigin += VEC_VIEW_CUSTOM;
 	}
 #endif
-	
+
 	eyeOrigin = m_vCamOrigin;
 	eyeAngles = m_aCamAngle;
 	fov = m_flFOV;
 
-	// Function 'C_HLTVCamera::CalcView' makes this function call in the same way (C_BasePlayer::CalcView);
+	// Function 'C_HLTVCamera::CalcView' makes this function call in the same way (C_BasePlayer::CalcView).
 	float fZNear, fZFar;
 	pPlayer->CalcView(eyeOrigin, eyeAngles, fZNear, fZFar, fov);
 
-	pPlayer->CalcViewModelView(eyeOrigin, eyeAngles);
+	// Trying to reproduce the camera rotation during incap if the server does not send data from local tables (netprop 'C_BasePlayer::m_Local.m_vecPunchAngle').
+	if (bSurvIsIncapacitated && (!g_CvarSourceTVSendLocalTables.GetBool() || eyeAngles.z <= 0.01)) {
+		VectorAdd(eyeAngles, CHLTVCameraFix::GetIncapPunchAngle(pPlayer), eyeAngles);
+	}
 	
+	pPlayer->CalcViewModelView(eyeOrigin, eyeAngles);
+
 	C_BaseViewModel* pViewModel = pPlayer->GetViewModel(0);
 	if (pViewModel != NULL) {
 		pViewModel->UpdateVisibility();
 	}
 }
 
-const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvIsIncapacitated)
+const QAngle& CHLTVCameraFix::GetIncapPunchAngle(C_TerrorPlayer* pPlayer)
 {
 	// Netprop value `C_BasePlayer::m_Local.m_vecPunchAngle` during player incapacitation: 0.000000 0.000000 19.968750 (l4d1 and l4d2)
 	// This code has an accumulative effect, the `C_BasePlayer::m_Local.m_vecPunchAngle` - z accumulates over time (never exceeds 20 on the z-axis).
@@ -225,27 +231,15 @@ const QAngle& CHLTVCameraFix::GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvI
 	// If not, try to reproduce the code during incap
 	// This code exists in `server_srv.so`, function `void CTerrorGameMovement::DecayPunchAngle()`
 
-	if (g_CvarSourceTVSendLocalTables.GetBool()) {
-		/*Msg(VSP_LOG_PREFIX "Server cvar 'tv_send_local_data_tables' enabled, netprop `C_BasePlayer::m_Local.m_vecPunchAngle` applied: %f %f %f""\n", \
-				pPlayer->GetPunchAngle().x, pPlayer->GetPunchAngle().y, pPlayer->GetPunchAngle().z);*/
-
-		return pPlayer->GetPunchAngle();
-	}
-
 	// We can't use this code because the vector has a cumulative effect and we need to save it somewhere, clean it up, and so on,
 	// and netprop `C_BasePlayer::m_Local.m_vecPunchAngle` is cleared every frame for no clear reason, 
 	// even if the server does not send this data (example at the bottom).
+
 #if 0
 	static ConVarRef survivor_incapacitated_roll("survivor_incapacitated_roll");
 	static ConVarRef punch_angle_decay_rate("punch_angle_decay_rate");
 
 	QAngle &vecPunchAngleMember = pPlayer->GetPunchAngleRef();
-
-	// Clear the vector if the player is no longer incapacitated
-	if (!bSurvIsIncapacitated) {
-		vecPunchAngleMember = vec3_angle;
-		return vec3_angle;
-	}
 
 	// Netprop `C_BasePlayer::m_Local.m_vecPunchAngle` not available here so try to reproduce the code
 	//Msg(VSP_LOG_PREFIX "Server cvar 'tv_send_local_data_tables' disabled attempt to reproduce code during player incapacitation""\n");

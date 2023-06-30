@@ -24,7 +24,7 @@ public:
 
 	void DestroyDetour();
 
-	static const QAngle& GetPunchAngle(C_TerrorPlayer* pPlayer, bool bSurvIsIncapacitated);
+	static const QAngle& GetIncapPunchAngle(C_TerrorPlayer* pPlayer);
 
 public:
 	CDetour* m_Detour_CalcInEyeCamView = NULL;
