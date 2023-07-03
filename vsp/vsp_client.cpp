@@ -71,7 +71,7 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 	Msg(VSP_LOG_PREFIX "[CGlobalVars] Received instance: %x. Time: %f ""\n", g_pGlobals, g_pGlobals->realtime);*/
 
 	CreateInterfaceFn gameClientFactory;
-	g_pEngineTool->GetClientFactory(gameClientFactory);
+	g_pEngineTool->GetClientFactoryWrapper(gameClientFactory);
 	if (gameClientFactory == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get client factory""\n");
 

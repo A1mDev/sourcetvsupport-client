@@ -35,8 +35,6 @@
 // Client code:
 void C_HLTVCamera::CalcInEyeCamView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov )
 {
-	static ConVarRef survivor_incapacitated_eye_height( "survivor_incapacitated_eye_height" );
-
 	C_BasePlayer *pPlayer = UTIL_PlayerByIndex( m_iTraget1 );
 
 	if ( !pPlayer )

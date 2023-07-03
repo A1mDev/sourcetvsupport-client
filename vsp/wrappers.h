@@ -383,7 +383,7 @@ class IEngineToolWrapper :
 {
 public:
 	// 'hl2sdk-l4d2' has the wrong vtable table 'IEngineTool' =(
-	inline void GetClientFactory(CreateInterfaceFn& factory)
+	inline void GetClientFactoryWrapper(CreateInterfaceFn& factory)
 	{
 #if SOURCE_ENGINE == SE_LEFT4DEAD2
 		vfunc<void(__thiscall*)(IEngineToolWrapper*, CreateInterfaceFn&)>(this, VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY)(this, factory);
