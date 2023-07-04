@@ -9,13 +9,16 @@
 #include "iclientunknown.h"
 #include "iclientnetworkable.h"
 #include "const.h" // LIFE_ALIVE
-
 #include "igameevents.h" // for include hltvcamera.h
 #include "l4d_sdk/GameEventListener.h" // for include hltvcamera.h, and l4d1 fix
-#include "usercmd.h" // for include hltvcamera.h
-#include "hltvcamera.h"
 
+// hl2sdk/game/shared/imovehelper.h:27
+// Fix error: ISO C++ forbids forward references to 'enum' types enum soundlevel_t; enum PLAYER_ANIM;
+#include "soundflags.h"
 #include "shareddefs.h"
+
+#include "usercmd.h" // for include hltvcamera.h
+#include "l4d_sdk/hltvcamera.h"
 //#include "itoolentity.h"
 #include "l4d_sdk/model.h"
 #include "netproprs.h"
@@ -32,8 +35,17 @@ extern CTerrorGameRules** g_ppGameRules;
 
 typedef CHandle<C_BaseEntity> CL_EHANDLE; // The client's version of EHANDLE.
 
+#if defined(__GNUC__) || defined(__clang__)
+#define forceinline __attribute__((always_inline))
+#elif (defined(__GNUC__) && !defined(__clang__))
+#define inline inline
+#elif defined(_MSC_VER)
+#define inline __inline
+#define forceinline __forceinline
+#endif
+
 template <typename fn>
-__forceinline fn vfunc(void* classbase, int func_index)
+forceinline fn vfunc(void* classbase, int func_index)
 {
 	return (*reinterpret_cast<fn**>(classbase))[func_index];
 }

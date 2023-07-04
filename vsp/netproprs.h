@@ -103,7 +103,7 @@ public:
 			iOffset = m_netProps.at(sPropName).second;
 		} catch (std::out_of_range& e) {
 			const char* sError = (e.what() == NULL) ? "Unknown" : e.what();
-			Msg(VSP_LOG_PREFIX "Failed to get offset %s, error: %s ""\n", sPropName, sError);
+			Msg(VSP_LOG_PREFIX "Failed to get offset %s, error: %s ""\n", sPropName.c_str(), sError);
 			iOffset = 0;
 		}
 

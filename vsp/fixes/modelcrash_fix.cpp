@@ -170,11 +170,11 @@ DETOUR_DECL_MEMBER1(CModelRender__FindOrCreateStaticPropColorData, CColorMeshDat
 	return DETOUR_MEMBER_CALL(CModelRender__FindOrCreateStaticPropColorData)(handle); // call real function
 }
 
-bool CModelCrashFix::CreateDetour(HMODULE enginedll)
+bool CModelCrashFix::CreateDetour()
 {
 	size_t iSigSize = 0;
-	uintptr_t CModelRender__FindOrCreateStaticPropColorData_pfn = UTIL_SignatureToAddress(enginedll, SIG_CMODELRENDER_CFINDORCREATESTATICPROPCOLORDATA, &iSigSize);
-	if (CModelRender__FindOrCreateStaticPropColorData_pfn == NULL) {
+	uintptr_t CModelRender__FindOrCreateStaticPropColorData_pfn = UTIL_SignatureToAddress(ENGINE_MODULE_NAME, SIG_CMODELRENDER_CFINDORCREATESTATICPROPCOLORDATA, &iSigSize);
+	if (CModelRender__FindOrCreateStaticPropColorData_pfn == PTR_NULL) {
 		Error(VSP_LOG_PREFIX "Failed to find signature 'CModelRender::FindOrCreateStaticPropColorData'. Please contact the author""\n");
 
 		return false;

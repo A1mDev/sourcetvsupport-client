@@ -4,7 +4,7 @@ Fixes for viewing demos and streaming from SourceTV for the client. Only for gam
 
 Installation
 ------
-1. Get [latest sourcetvsupport-client release](https://github.com/A1mDev/sourcetvsupport-client/actions) (requires authentication) for your OS (`currently only supported on windows`)
+1. Get [latest sourcetvsupport-client release](https://github.com/A1mDev/sourcetvsupport-client/actions) (requires authentication) for your OS (linux or windows)
 2. Extract the zip file to folder `left4dead2/addons` or `left4dead/addons`
 3. Add `-insecure` to your game launch options
 4. Now you can view broadcasts and demos recorded by SourceTV

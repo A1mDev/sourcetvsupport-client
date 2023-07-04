@@ -66,7 +66,7 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 
 	CL_EHANDLE newParentHandle;
 	newParentHandle.Set(pParentEntity);
-	CL_EHANDLE& m_pMoveParent = pThis->GetMoveParentMember();
+	CL_EHANDLE m_pMoveParent = pThis->GetMoveParentMember();
 
 	/*if (bDebug) {
 		Msg(VSP_LOG_PREFIX "[C_BaseEntity__SetParent][1] This: %x, pParentEntity: %x, iParentAttachment: %d, index: %d""\n", \
@@ -109,11 +109,11 @@ DETOUR_DECL_MEMBER2(C_BaseEntity__SetParent, void, C_BaseEntity*, pParentEntity,
 	}
 }
 
-bool CSetParentFix::CreateDetour(HMODULE clientdll)
+bool CSetParentFix::CreateDetour()
 {
 	size_t iSigSize = 0;
-	uintptr_t C_BaseEntity__SetParent_pfn = UTIL_SignatureToAddress(clientdll, SIG_CBASEENTITY_SETPARENT, &iSigSize);
-	if (C_BaseEntity__SetParent_pfn == NULL) {
+	uintptr_t C_BaseEntity__SetParent_pfn = UTIL_SignatureToAddress(CLIENT_MODULE_NAME, SIG_CBASEENTITY_SETPARENT, &iSigSize);
+	if (C_BaseEntity__SetParent_pfn == PTR_NULL) {
 		Error(VSP_LOG_PREFIX "Failed to find signature 'C_BaseEntity::SetParent'. Please contact the author""\n");
 
 		return false;

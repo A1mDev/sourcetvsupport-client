@@ -409,6 +409,7 @@ class ExtensionConfig(object):
       os.path.join(self.sm_root, 'public', 'jit'),
       os.path.join(self.sm_root, 'public', 'libudis86'),
       os.path.join(self.sm_root, 'public', 'asm'),
+      os.path.join(self.sm_root, 'core', 'logic'),
 
       #os.path.join(self.sm_root, 'public', 'extensions'),
       os.path.join(self.sm_root, 'sourcepawn', 'include'),

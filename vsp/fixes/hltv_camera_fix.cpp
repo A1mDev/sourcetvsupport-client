@@ -269,11 +269,11 @@ const QAngle& CHLTVCameraFix::GetIncapPunchAngle(C_TerrorPlayer* pPlayer)
 #endif
 }
 
-bool CHLTVCameraFix::CreateDetour(HMODULE clientdll)
+bool CHLTVCameraFix::CreateDetour()
 {
 	size_t iSigSize = 0;
-	uintptr_t C_HLTVCamera__CalcInEyeCamView_pfn = UTIL_SignatureToAddress(clientdll, SIG_CHLTVCAMERA_CALCINEYECAMVIEW, &iSigSize);
-	if (C_HLTVCamera__CalcInEyeCamView_pfn == NULL) {
+	uintptr_t C_HLTVCamera__CalcInEyeCamView_pfn = UTIL_SignatureToAddress(CLIENT_MODULE_NAME, SIG_CHLTVCAMERA_CALCINEYECAMVIEW, &iSigSize);
+	if (C_HLTVCamera__CalcInEyeCamView_pfn == PTR_NULL) {
 		Error(VSP_LOG_PREFIX "Failed to find signature 'C_HLTVCamera::CalcInEyeCamView'. Please contact the author""\n");
 
 		return false;

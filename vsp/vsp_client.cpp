@@ -107,18 +107,15 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 
 	Msg(VSP_LOG_PREFIX "[IClientEntityList] Received interface: %x ""\n", g_pClientEntityList);
 	
-	HMODULE clientdll = GetModuleHandle("client.dll");
-	HMODULE enginedll = GetModuleHandle("engine.dll");
-	
 	if (!DumpClientNetClasses()) {
 		return false;
 	}
 
-	if (!InitFunctions(clientdll)) {
+	if (!InitFunctions()) {
 		return false;
 	}
 
-	if (!InitClassInstances(clientdll)) {
+	if (!InitClassInstances()) {
 		return false;
 	}
 
@@ -126,15 +123,15 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 		return false;
 	}
 
-	if (!g_ParentFix.CreateDetour(clientdll)) {
+	if (!g_ParentFix.CreateDetour()) {
 		return false;
 	}
 
-	if (!g_HltvCameraFix.CreateDetour(clientdll)) {
+	if (!g_HltvCameraFix.CreateDetour()) {
 		return false;
 	}
 
-	if (!g_ModelCrashFix.CreateDetour(enginedll)) {
+	if (!g_ModelCrashFix.CreateDetour()) {
 		return false;
 	}
 
@@ -161,7 +158,7 @@ bool DumpClientNetClasses()
 		return false;
 	}
 
-	Msg(VSP_LOG_PREFIX "[ClientClass] Get props: %d ""\n", iClassCount);
+	//Msg(VSP_LOG_PREFIX "[ClientClass] Get props: %d ""\n", iClassCount);
 
 	return true;
 }

@@ -1,6 +1,7 @@
 #include "util.h"
 #include <cstdio>
 #include <cstring>
+#include "tier0/dbg.h"
 
 //https://github.com/alliedmodders/sourcemod/blob/237db0504c7a59e394828446af3e8ca3d53ef647/extensions/sdktools/vglobals.cpp#L149
 size_t UTIL_StringToSignature(const char* str, char buffer[], size_t maxlength)
@@ -37,14 +38,39 @@ size_t UTIL_StringToSignature(const char* str, char buffer[], size_t maxlength)
 	return real_bytes;
 }
 
-uintptr_t UTIL_SignatureToAddress(HMODULE hModule, const char* sSig, size_t *retSigSize /*= NULL*/)
+uintptr_t UTIL_SignatureToAddress(const char* pModuleName, const char* sSig, size_t* retSigSize /*= NULL*/)
 {
 	char sSignatureAddress[256];
+
+#ifdef PLATFORM_WINDOWS
+	HMODULE pModule = GetModuleHandle(pModuleName);
+	if (pModule == NULL) {
+		Error("Unable to open module %s""\n", pModuleName);
+
+		return uintptr_t(NULL);
+	}
+#elif defined PLATFORM_LINUX
+	void* pModule = dlopen(pModuleName, RTLD_NOW);
+	if (pModule == NULL) {
+		Error("Unable to open module %s""\n", pModuleName);
+
+		return uintptr_t(NULL);
+	}
+#else
+	#error This platform is not supported
+#endif
+
 	size_t iSigSize = UTIL_StringToSignature(sSig, sSignatureAddress, sizeof(sSignatureAddress));
-	
+
 	if (retSigSize != NULL) {
 		*retSigSize = iSigSize;
 	}
 
-	return uintptr_t(g_MemUtils.FindPattern(hModule, sSignatureAddress, iSigSize));
+	uintptr_t pFunction = uintptr_t(g_MemUtils.FindPattern(pModule, sSignatureAddress, iSigSize));
+
+#ifdef PLATFORM_LINUX
+	dlclose(pModule);
+#endif
+
+	return pFunction;
 }

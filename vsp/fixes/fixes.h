@@ -9,7 +9,7 @@ class C_TerrorPlayer;
 class CSetParentFix
 {
 public:
-	bool CreateDetour(HMODULE clientdll);
+	bool CreateDetour();
 
 	void DestroyDetour();
 
@@ -20,7 +20,7 @@ public:
 class CHLTVCameraFix
 {
 public:
-	bool CreateDetour(HMODULE clientdll);
+	bool CreateDetour();
 
 	void DestroyDetour();
 
@@ -33,7 +33,7 @@ public:
 class CModelCrashFix
 {
 public:
-	bool CreateDetour(HMODULE enginedll);
+	bool CreateDetour();
 
 	void DestroyDetour();
 

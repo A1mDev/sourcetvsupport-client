@@ -7,9 +7,9 @@
 CGlobalVars* g_pGlobals = NULL;
 CTerrorGameRules** g_ppGameRules = NULL;
 
-uintptr_t C_BaseEntity::m_updateVisibilityFn = NULL;
-uintptr_t C_BasePlayer::m_getViewModelFn = NULL;
-uintptr_t C_HLTVCameraWrapper::m_calcChaseCamViewFn = NULL;
+uintptr_t C_BaseEntity::m_updateVisibilityFn = PTR_NULL;
+uintptr_t C_BasePlayer::m_getViewModelFn = PTR_NULL;
+uintptr_t C_HLTVCameraWrapper::m_calcChaseCamViewFn = PTR_NULL;
 
 uint16_t C_BaseEntity::m_iSimulationTimeOffset = 0;
 uint16_t C_BaseEntity::m_ifFlagsOffset = 0;
@@ -95,21 +95,21 @@ bool InitOffsets()
 	};
 
 	for (auto&& el : s_offsets) {
-		el.iOffset = g_NetProps.GetOffset(el.sPropName);
+		el.iOffset = g_NetProps.GetOffset(el.sPropName.c_str());
 
 		if (el.iOffset == 0) {
-			Error(VSP_LOG_PREFIX "Cannot find specified offset '%s'""\n", el.sPropName);
+			Error(VSP_LOG_PREFIX "Cannot find specified offset '%s'""\n", el.sPropName.c_str());
 
 			return false;
 		}
 
-		Msg(VSP_LOG_PREFIX "Received offset '%d' for netprop '%s'""\n", el.iOffset, el.sPropName);
+		Msg(VSP_LOG_PREFIX "Received offset '%d' for netprop '%s'""\n", el.iOffset, el.sPropName.c_str());
 	}
 
 	return true;
 }
 
-bool InitFunctions(HMODULE clientdll)
+bool InitFunctions()
 {
 	static const struct {
 		const char* sFnName;
@@ -122,9 +122,9 @@ bool InitFunctions(HMODULE clientdll)
 	};
 
 	for (auto&& el : s_sigs) {
-		el.pAddress = UTIL_SignatureToAddress(clientdll, el.sSign);
+		el.pAddress = UTIL_SignatureToAddress(CLIENT_MODULE_NAME, el.sSign);
 
-		if (el.pAddress == NULL) {
+		if (el.pAddress == PTR_NULL) {
 			Error(VSP_LOG_PREFIX "Could not find signature for function '%s'""\n", el.sFnName);
 
 			return false;
@@ -136,11 +136,11 @@ bool InitFunctions(HMODULE clientdll)
 	return true;
 }
 
-bool InitGameRules(HMODULE clientdll)
+bool InitGameRules()
 {
 	// We use a pointer to a pointer, because this class may not be available when changing the map
 	
-	g_ppGameRules = *(CTerrorGameRules***)(UTIL_SignatureToAddress(clientdll, SIG_GAMERULES_PTR) + 2); // + 2 first bytes (8B 0D)
+	g_ppGameRules = *(CTerrorGameRules***)(UTIL_SignatureToAddress(CLIENT_MODULE_NAME, SIG_GAMERULES_PTR) + 2); // + 2 first bytes (8B 0D)
 	if (g_ppGameRules == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get pointer to instance 'CTerrorGameRules'""\n");
 
@@ -152,9 +152,9 @@ bool InitGameRules(HMODULE clientdll)
 	return true;
 }
 
-bool InitGlobals(HMODULE clientdll)
+bool InitGlobals()
 {
-	CGlobalVars** ppGlobals = *(CGlobalVars***)(UTIL_SignatureToAddress(clientdll, SIG_GLOBALS_PTR) + 2); // + 2 first bytes (8B 0D) (dereference)
+	CGlobalVars** ppGlobals = *(CGlobalVars***)(UTIL_SignatureToAddress(CLIENT_MODULE_NAME, SIG_GLOBALS_PTR) + 2); // + 2 first bytes (8B 0D) (dereference)
 	if (ppGlobals == NULL) {
 		Error(VSP_LOG_PREFIX "Failed to get pointer to instance 'CGlobalVars'""\n");
 
@@ -163,7 +163,7 @@ bool InitGlobals(HMODULE clientdll)
 
 	g_pGlobals = *ppGlobals;
 	if (g_pGlobals == NULL) {
-		Error("Failed to get pointer to class 'CGlobalVars': %x""\n", g_pGlobals);
+		Error("Failed to get pointer to class 'CGlobalVars': NULL""\n");
 
 		return false;
 	}
@@ -173,9 +173,9 @@ bool InitGlobals(HMODULE clientdll)
 	return true;
 }
 
-bool InitClassInstances(HMODULE clientdll)
+bool InitClassInstances()
 {
-	if (!InitGameRules(clientdll) || !InitGlobals(clientdll)) {
+	if (!InitGameRules() || !InitGlobals()) {
 		return false;
 	}
 
