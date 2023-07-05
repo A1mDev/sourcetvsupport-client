@@ -142,7 +142,8 @@ jobs:
         with:
           path: src
           
-      - name: Compiling ${{ github.event.repository.name }} files for l4d2
+      - name: Compiling ${{ github.event.repository.name }} files for windows (L4D2, L4D)
+        if: runner.os == 'Windows'
         shell: bash
         working-directory: src
         run: |
@@ -150,14 +151,14 @@ jobs:
           cd build
           python \
             ../configure.py \
-            --sdks l4d2 \
+            --sdks l4d2,l4d \
             --enable-optimize \
             --sm-path="${{ github.workspace }}/sourcemod-${{ matrix.sm_version }}"\
             --mms-path="${{ github.workspace }}/metamod-${{ matrix.meta_version }}"
           ambuild
 
-      - name: Compiling ${{ github.event.repository.name }} files for l4d
-        if: runner.os == 'Windows'
+      - name: Compiling ${{ github.event.repository.name }} files for linux (L4D2)
+        if: runner.os == 'Linux'
         shell: bash
         working-directory: src
         run: |
@@ -165,7 +166,7 @@ jobs:
           cd build
           python \
             ../configure.py \
-            --sdks l4d \
+            --sdks l4d2 \
             --enable-optimize \
             --sm-path="${{ github.workspace }}/sourcemod-${{ matrix.sm_version }}"\
             --mms-path="${{ github.workspace }}/metamod-${{ matrix.meta_version }}"
