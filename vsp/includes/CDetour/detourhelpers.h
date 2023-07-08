@@ -42,6 +42,7 @@
 #endif
 #define ALIGN(ar) ((long)ar & ~(PAGE_SIZE-1))
 #define	PAGE_EXECUTE_READWRITE	PROT_READ|PROT_WRITE|PROT_EXEC
+#define	PAGE_EXECUTE_READ		PROT_READ|PROT_EXEC
 #elif defined PLATFORM_WINDOWS
 #include <windows.h>
 #endif
