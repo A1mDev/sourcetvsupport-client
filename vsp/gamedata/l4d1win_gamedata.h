@@ -4,6 +4,8 @@
 ////////////////////////////// Pointer signatures ////////////////////////////// 
 // Unfixed bug, byte '/x00' is treated as a null terminator because of this, the signature cannot be found.
 
+#pragma region PTR_SIGNATURES
+
 #define SIG_GAMERULES_PTR									"\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x11\x8B\x42\x2A\x74\x2A\xFF\xD0\x83\xC0\x2A"
 // Pointer to class 'CTerrorGameRules'. Signature + 2 first bytes (8B 0D)
 // 8B 0D ? ? ? ? 8B 11 8B 42 ? 74 ? FF D0 83 C0 ?
@@ -16,7 +18,11 @@
 // The pointer is in function 'UTIL_PlayerByIndex', which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
 // client.dll
 
+#pragma endregion PTR_SIGNATURES
+
 ////////////////////////////// Function signatures ////////////////////////////// 
+
+#pragma region FN_SIGNATURES
 
 #define SIG_CMODELRENDER_CFINDORCREATESTATICPROPCOLORDATA	"\x66\x8B\x44\x24\x04\x81\xEC\x14\x05\x2A\x2A\x66\x3D\x2A\x2A"
 // CColorMeshData* CModelRender::FindOrCreateStaticPropColorData(ModelInstanceHandle_t handle)
@@ -59,7 +65,11 @@
 // client.dll
 // This function is in function 'C_HLTVCamera::CalcInEyeCamView'
 
+#pragma endregion FN_SIGNATURES
+
 ////////////////////////////// Offsets //////////////////////////////
+
+#pragma region OFFSETS
 
 #define OFF_CBASEENTITY_INDEX								80
 // Offset 'C_BaseEntity::index'
@@ -76,12 +86,17 @@
 // Nearest dataprop 'C_BaseEntity::m_iParentAttachment', offset 464
 // client.dll
 
+#pragma endregion OFFSETS
+
 //////////////////////////// Vtable Offsets ////////////////////////////
 
+#pragma region VTABLE_OFFSETS
+
 #define VTB_OFF_CBASEENTITY_ISPLAYER						136
-// virtual bool IsPlayer() const 
+// bool IsPlayer() const 
 // Vtable offset is inside function 'UTIL_PlayerByIndex', 
 // which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
+// Can also be found in the function 'C_BaseViewModel* C_BasePlayer::GetViewModel(int viewmodelindex = 0)'
 // client.dll
 
 #define VTB_OFF_IBASECLIENTDLL_GETALLCLASSES				7
@@ -122,5 +137,41 @@
 // since it calls this function 'C_HLTVCamera::CalcInEyeCamView' internally. 
 // Call order '..->CViewRender::SetUpView()->C_HLTVCamera::CalcView()->C_HLTVCamera::CalcInEyeCamView()'.
 // client.dll
+
+#pragma endregion VTABLE_OFFSETS
+
+////////////////////////////// Patches //////////////////////////////
+
+#pragma region GHOST_CC_PATCH
+
+#define SIG_GHOST_CC_FIX_PATCH_PLACE						"\xE8\x2A\x2A\x2A\x2A\x83\xC4\x2A\x84\xC0\x74\x2A\x8B\x16\x8B\x82\x2A\x2A\x2A\x2A"
+// E8 ? ? ? ? 83 C4 ? 84 C0 74 ? 8B 16 8B 82 ? ? ? ?
+// client.dll
+// 
+// The signature of the place where the patch will be made is used, not the function itself
+// The function in which the patch will be made can be found using cvars 'r_bloomtintexponent_ghost' 
+// and 'r_bloomtintexponent' (search as a string, see file 'instructions.txt' how to find it)
+//
+// We remove function 'C_BasePlayer::IsLocalPlayer?' from the condition so that our code works not only for the local player (see below)
+//
+#if 0
+.text:10213774 E8 47 A9 E4 FF                                call    sub_1005E0C0 // C_BasePlayer::IsLocalPlayer ?
+.text:10213779 83 C4 04                                      add     esp, 4
+.text:1021377C 84 C0                                         test    al, al
+.text:1021377E 74 17                                         jz      short loc_10213797 // change bytes to nope 90 90
+#endif
+
+#define SIG_GHOST_CC_FIX_PATCH_OFFSET						10
+// E8 ? ? ? ? 83 C4 ? 84 C0 74 ? 8B 16 8B 82 ? ? ? ?
+// Number of bytes up to byte 74 (jz instruction)
+// client.dll
+
+#define GHOST_CC_PATCH_CHECK_BYTE							0x74
+// 74 (jz instruction)
+
+#define GHOST_CC_PATCH_BYTES								{0x90, 0x90}
+// nop nop
+
+#pragma endregion GHOST_CC_PATCH
 
 #endif // _INCLUDE_L4D1_2_GAMEDATA_VSP_H_

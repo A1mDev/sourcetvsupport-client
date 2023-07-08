@@ -15,6 +15,7 @@ CNetPropsManager g_NetProps;
 CSetParentFix g_ParentFix;
 CHLTVCameraFix g_HltvCameraFix;
 CModelCrashFix g_ModelCrashFix;
+CGhostCCFix g_GhostCCFix;
 
 ICvar* g_pCvar = NULL;
 //IPlayerInfoManager* g_pPlayerManager = NULL;
@@ -135,6 +136,10 @@ bool VSPClient::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameS
 		return false;
 	}
 
+	if (!g_GhostCCFix.CreatePatch()) {
+		return false;
+	}
+
 	ConVar_Register(0, this);
 
 	Msg(VSP_LOG_PREFIX "Client plugin loaded successfully. Version: \"" VSP_VERSION "\"\n");
@@ -168,6 +173,9 @@ void VSPClient::Unload()
 	g_ParentFix.DestroyDetour();
 	g_HltvCameraFix.DestroyDetour();
 	g_ModelCrashFix.DestroyDetour();
+
+	g_GhostCCFix.DestroyPatch();
+
 	g_NetProps.Clear();
 
 	ConVar_Unregister();

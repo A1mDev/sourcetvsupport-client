@@ -1,0 +1,52 @@
+////////////////////////////// Some instructions //////////////////////////////
+
+// How to find function using cvar:
+// We need to find the string with the name of the cvar (in our case 'r_bloomtintexponent_ghost'), 
+// go to address of global variable 'unk_**' (in our case'unk_107C0800', click on this thing)
+// After we have navigated to the address of the 'unk_107C0800' variable, we need to move down to the first 'dword_***' (in our case 'dword_107C081C')
+// look at links to this 'dword_***', hover over this 'dword_***' and use the 'ctrl+x' key and we will find the desired function
+// (in our case cvar is used in one function)
+
+.text:10510660                               sub_10510660    proc near; DATA XREF : .rdata : 10529C80
+.text:10510660 6A 00                                         push    0
+.text:10510662 68 FC 70 54 10                                push    offset a01; "0.1"
+.text:10510667 68 2C B0 5B 10                                push    offset aRBloomtintexpo_0; "r_bloomtintexponent_ghost"
+.text:1051066C B9 00 08 7C 10                                mov     ecx, offset unk_107C0800 // use this 'unk_107C0800'
+.text:10510671 E8 2A 1E EC FF                                call    sub_103D24A0
+.text:10510676 68 F0 30 52 10                                push    offset sub_105230F0; void(__cdecl*)()
+.text:1051067B E8 7E CD F6 FF                                call    _atexit
+.text:10510680 59                                            pop     ecx
+.text:10510681 C3                                            retn
+.text:10510681                               sub_10510660    endp
+
+// After we have passed to the address of the variable
+.data:107C0800 ? ? unk_107C0800    db ? ; ; DATA XREF : sub_10510660 + C // the place where we moved
+.data:107C0800; sub_105230F0
+.data:107C0801 ? ? db ? ;
+.data:107C0802 ? ? db ? ;
+.data:107C0803 ? ? db ? ;
+.data:107C0804 ? ? db ? ;
+.data:107C0805 ? ? db ? ;
+.data:107C0806 ? ? db ? ;
+.data:107C0807 ? ? db ? ;
+.data:107C0808 ? ? db ? ;
+.data:107C0809 ? ? db ? ;
+.data:107C080A ? ? db ? ;
+.data:107C080B ? ? db ? ;
+.data:107C080C ? ? db ? ;
+.data:107C080D ? ? db ? ;
+.data:107C080E ? ? db ? ;
+.data:107C080F ? ? db ? ;
+.data:107C0810 ? ? db ? ;
+.data:107C0811 ? ? db ? ;
+.data:107C0812 ? ? db ? ;
+.data:107C0813 ? ? db ? ;
+.data:107C0814 ? ? db ? ;
+.data:107C0815 ? ? db ? ;
+.data:107C0816 ? ? db ? ;
+.data:107C0817 ? ? db ? ;
+.data:107C0818 ? ? db ? ;
+.data:107C0819 ? ? db ? ;
+.data:107C081A ? ? db ? ;
+.data:107C081B ? ? db ? ;
+.data:107C081C ? ?? ? ? ? ? ? dword_107C081C  dd ? ; DATA XREF : sub_1026F610 + 2E4 // use this 'dword_107C081C'

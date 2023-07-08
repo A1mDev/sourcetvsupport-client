@@ -3,6 +3,7 @@
 
 #include "../includes/CDetour/detours.h"
 #include "convar.h"
+#include "util.h"
 
 class C_TerrorPlayer;
 
@@ -41,6 +42,26 @@ public:
 	CDetour* m_DetourFindOrCreateStaticPropColorData = NULL;
 };
 
+class CGhostCCFix
+{
+public:
+	bool CreatePatch();
+	void DestroyPatch();
+
+	bool EnablePatch();
+	bool DisablePatch();
+
+	static void OnGhostPatchStateChanged(IConVar* var, const char* pOldValue, float flOldValue);
+
+public:
+	uintptr_t m_patchedAddr = PTR_NULL;
+
+	bool m_bPatchEnabled = false;
+
+	static bool m_bPatchAddrChecked;
+};
+
 extern ConVar g_CvarSourceTVSendLocalTables;
+extern CGhostCCFix g_GhostCCFix;
 
 #endif // _INCLUDE_FIXES_VSP_H_

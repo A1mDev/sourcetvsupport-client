@@ -4,6 +4,8 @@
 ////////////////////////////// Pointer signatures ////////////////////////////// 
 // Unfixed bug, byte '/x00' is treated as a null terminator because of this, the signature cannot be found.
 
+#pragma region PTR_SIGNATURES
+
 #define SIG_GAMERULES_PTR									"\xA1\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xF3\x0F\x10\x45\x2A\xF3\x0F\x11\x43\x2A\xF6\x86\x2A\x2A\x2A\x2A\x2A"
 // Pointer to class 'CTerrorGameRules'. Signature + 2 first bytes (A1 ?)
 // A1 ? ? ? ? ? ? ? F3 0F 10 45 ? F3 0F 11 43 ? F6 86 ? ? ? ? ?
@@ -16,7 +18,11 @@
 // The pointer is in function 'UTIL_PlayerByIndex', which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
 // client.so
 
-////////////////////////////// Function signatures ////////////////////////////// 
+#pragma endregion PTR_SIGNATURES
+
+////////////////////////////// Function signatures //////////////////////////////
+
+#pragma region FN_SIGNATURES
 
 #define SIG_CMODELRENDER_CFINDORCREATESTATICPROPCOLORDATA	"\x55\x89\xE5\x57\x56\x53\x81\xEC\x5C\x07\x2A\x2A"
 // CColorMeshData* CModelRender::FindOrCreateStaticPropColorData(ModelInstanceHandle_t handle)
@@ -34,7 +40,7 @@
 // void C_HLTVCamera::CalcInEyeCamView(Vector& eyeOrigin, QAngle& eyeAngles, float& fov)
 // 55 89 E5 57 56 53 83 EC 2C 8B 45 0C 8B 5D 08 8B 7D 10
 // client.so
-// Can find function 'void CViewRender::SetUpView()' using cvar 'cl_demoviewoverride' (search as string), 
+// Can find function 'void CViewRender::SetUpView()' using cvar 'cl_demoviewoverride' (search as string, see file 'instructions.txt' how to find it), 
 // inside this function there is function 'void C_HLTVCamera::CalcView(Vector& origin, QAngle& angles, float& fov)', 
 // inside function 'void C_HLTVCamera::CalcView(Vector& origin, QAngle& angles, float& fov)' there is the function we need,
 // see source code hl2sdk-l4d2.
@@ -59,7 +65,11 @@
 // client.so
 // This function is in function 'C_HLTVCamera::CalcInEyeCamView'
 
+#pragma endregion FN_SIGNATURES
+
 ////////////////////////////// Offsets //////////////////////////////
+
+#pragma region OFFSETS
 
 #define OFF_CBASEENTITY_INDEX								72
 // Offset 'C_BaseEntity::index'
@@ -76,12 +86,17 @@
 // Nearest dataprop 'C_BaseEntity::m_iParentAttachment', offset 488
 // client.so
 
+#pragma endregion OFFSETS
+
 //////////////////////////// Vtable Offsets ////////////////////////////
 
+#pragma region VTABLE_OFFSETS
+
 #define VTB_OFF_CBASEENTITY_ISPLAYER						191
-// virtual bool IsPlayer() const 
+// bool IsPlayer() const 
 // Vtable offset is inside function 'UTIL_PlayerByIndex', 
 // which can also be found in function 'C_HLTVCamera::CalcInEyeCamView'
+// Can also be found in the function 'C_BaseViewModel* C_BasePlayer::GetViewModel(int viewmodelindex = 0)'
 // client.so
 
 #define VTB_OFF_IVENGINETOOL_GETCLIENTFACTORY				12
@@ -128,5 +143,40 @@
 // since it calls this function 'C_HLTVCamera::CalcInEyeCamView' internally. 
 // Call order '..->CViewRender::SetUpView()->C_HLTVCamera::CalcView()->C_HLTVCamera::CalcInEyeCamView()'.
 // client.so
+
+#pragma endregion VTABLE_OFFSETS
+
+////////////////////////////// Patches //////////////////////////////
+
+#pragma region GHOST_CC_PATCH
+
+#define SIG_GHOST_CC_FIX_PATCH_PLACE						"\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\x2A\x2A\x2A\x2A\xF3\x0F\x10\x43\x2A"
+// E8 ? ? ? ? 84 C0 0F 85 ? ? ? ? F3 0F 10 43 ?
+// client.so
+// 
+// The signature of the place where the patch will be made is used, not the function itself
+// The function in which the patch will be made can be found using cvars 'r_bloomtintexponent_ghost' 
+// and 'r_bloomtintexponent' (search as a string, see file 'instructions.txt' how to find it)
+//
+// We remove function 'C_BasePlayer::IsLocalPlayer?' from the condition so that our code works not only for the local player (see below)
+//
+#if 0
+.text:0085C2C0 E8 CB 95 DC FF                                call    sub_625890 // C_BasePlayer::IsLocalPlayer ?
+.text:0085C2C5 84 C0                                         test    al, al
+.text:0085C2C7 0F 85 BB 01 00 00                             jnz     loc_85C488 // change bytes to 90 E9 ? ? ? ? 90 -> nop (remove extra byte) and jmp old address
+#endif
+
+#define SIG_GHOST_CC_FIX_PATCH_OFFSET						7
+// E8 ? ? ? ? 84 C0 0F 85 ? ? ? ? F3 0F 10 43 ?
+// Number of bytes up to byte 0F (jnz instruction)
+// client.so
+
+#define GHOST_CC_PATCH_CHECK_BYTE							0x0F
+// 0F (jnz instruction)
+
+#define GHOST_CC_PATCH_BYTES								{ 0x90, 0xE9 }
+// nop jmp
+
+#pragma endregion GHOST_CC_PATCH
 
 #endif // _INCLUDE_L4D1_2_GAMEDATA_VSP_H_

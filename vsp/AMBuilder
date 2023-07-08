@@ -9,6 +9,7 @@ project.sources += [
   'fixes/setparent_fix.cpp',
   'fixes/hltv_camera_fix.cpp',
   'fixes/modelcrash_fix.cpp',
+  'fixes/ghostcc_fix.cpp',
   'includes/CDetour/detours.cpp',
   'includes/MemoryUtils/MemoryUtils.cpp',
 
